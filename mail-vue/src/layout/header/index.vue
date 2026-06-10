@@ -4,11 +4,11 @@
       <hanburger @click="changeAside"></hanburger>
       <span class="breadcrumb-item">{{ $t(route.meta.title) }}</span>
     </div>
-    <div v-perm="'email:send'" class="writer-box" @click="openSend">
-      <div class="writer">
-        <Icon icon="material-symbols:edit-outline-sharp" width="22" height="22"/>
+      <div v-perm="'email:send'" class="writer-box" @click="openSend" @dblclick="dblClickSend">
+        <div class="writer">
+          <Icon icon="material-symbols:edit-outline-sharp" width="22" height="22"/>
+        </div>
       </div>
-    </div>
     <div class="toolbar">
       <div v-if="uiStore.dark" class="sun-icon icon-item" @click="openDark($event)">
         <Icon icon="mingcute:sun-fill"/>
@@ -79,6 +79,7 @@ import {logout} from "@/request/login.js";
 import {Icon} from "@iconify/vue";
 import {useUiStore} from "@/store/ui.js";
 import {useUserStore} from "@/store/user.js";
+import {useEmailStore} from "@/store/email.js";
 import {useRoute} from "vue-router";
 import {computed, ref} from "vue";
 import {useSettingStore} from "@/store/setting.js";
@@ -91,6 +92,7 @@ const route = useRoute();
 const settingStore = useSettingStore();
 const userStore = useUserStore();
 const uiStore = useUiStore();
+const emailStore = useEmailStore();
 const logoutLoading = ref(false)
 const userInfoShow = ref(false)
 const userinfoRef = ref({})
@@ -234,6 +236,18 @@ function switchDark(nextIsDark, root) {
 
 function openSend() {
   uiStore.writerRef.open()
+}
+
+function dblClickSend() {
+  localStorage.setItem('compose-data', JSON.stringify({
+    composeMode: 'new',
+    email: {}
+  }))
+  const url = `${window.location.origin}/compose`
+  const win = window.open(url, '_blank', 'width=900,height=750')
+  if (win) {
+    win.focus()
+  }
 }
 
 function changeAside() {

@@ -41,6 +41,7 @@
             <div :class="'email-row ' + props.type"
                  :data-checked="item.checked"
                  @click="jumpDetails(item)"
+                 @dblclick="handleDblClick($event, item)"
                  v-if="!item.expand"
                  :key="item.emailId"
                  @contextmenu="handleContextmenu($event, item)"
@@ -297,7 +298,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['jump', 'refresh-before', 'delete-draft', 'right-search'])
+const emit = defineEmits(['jump', 'refresh-before', 'delete-draft', 'right-search', 'dblclick'])
 const {t} = useI18n()
 const settingStore = useSettingStore()
 const uiStore = useUiStore();
@@ -804,6 +805,11 @@ function jumpDetails(email) {
     }
   }
   emit('jump', email)
+}
+
+function handleDblClick(event, email) {
+  event.preventDefault()
+  emit('dblclick', email)
 }
 
 

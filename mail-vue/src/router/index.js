@@ -55,6 +55,24 @@ const routes = [
 
     },
     {
+        path: '/detail',
+        name: 'standalone-detail',
+        component: () => import('@/views/standalone-detail/index.vue'),
+        meta: {
+            title: 'detail',
+            standalone: true
+        }
+    },
+    {
+        path: '/compose',
+        name: 'standalone-compose',
+        component: () => import('@/views/standalone-compose/index.vue'),
+        meta: {
+            title: 'compose',
+            standalone: true
+        }
+    },
+    {
         path: '/login',
         name: 'login',
         component: () => import('@/views/login/index.vue')
@@ -166,7 +184,10 @@ router.afterEach((to) => {
         }
     }
 
-    if (window.innerWidth < 1025) {
+    if (to.meta.standalone) {
+        uiStore.asideShow = false
+        uiStore.accountShow = false
+    } else if (window.innerWidth < 1025) {
         uiStore.asideShow = false
     }
 

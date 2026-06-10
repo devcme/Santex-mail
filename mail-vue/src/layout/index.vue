@@ -42,11 +42,23 @@ onMounted(() => {
 
   window.addEventListener('resize', handleResize)
   handleResize()
+
+  window.addEventListener('message', handleMessage)
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', handleResize)
+  window.removeEventListener('message', handleMessage)
 })
+
+function handleMessage(event) {
+  if (event.origin !== window.location.origin) return
+  if (event.data.type === 'reply' && event.data.email) {
+    uiStore.writerRef.openReply(event.data.email)
+  } else if (event.data.type === 'forward' && event.data.email) {
+    uiStore.writerRef.openForward(event.data.email)
+  }
+}
 </script>
 
 <style lang="scss" scoped>
