@@ -1,23 +1,15 @@
 <template>
-  <div class="header" :class="!hasPerm('email:send') ? 'not-send' : ''">
+  <div class="header">
     <div class="header-btn">
       <hanburger @click="changeAside"></hanburger>
       <span class="breadcrumb-item">{{ $t(route.meta.title) }}</span>
     </div>
-      <div v-perm="'email:send'" class="writer-box" @click="openSend" @dblclick="dblClickSend">
-        <div class="writer">
-          <Icon icon="material-symbols:edit-outline-sharp" width="22" height="22"/>
-        </div>
-      </div>
     <div class="toolbar">
       <div v-if="uiStore.dark" class="sun-icon icon-item" @click="openDark($event)">
         <Icon icon="mingcute:sun-fill"/>
       </div>
       <div v-else class="dark-icon icon-item" @click="openDark($event)">
         <Icon icon="solar:moon-linear"/>
-      </div>
-      <div class="notice icon-item" @click="openNotice">
-        <Icon icon="streamline-plump:announcement-megaphone"/>
       </div>
       <el-dropdown ref="userinfoRef" @visible-change="e => userInfoShow = e" :teleported="false" popper-class="detail-dropdown">
         <div class="avatar" @click="userInfoHide" >
@@ -79,7 +71,6 @@ import {logout} from "@/request/login.js";
 import {Icon} from "@iconify/vue";
 import {useUiStore} from "@/store/ui.js";
 import {useUserStore} from "@/store/user.js";
-import {useEmailStore} from "@/store/email.js";
 import {useRoute} from "vue-router";
 import {computed, ref} from "vue";
 import {useSettingStore} from "@/store/setting.js";
@@ -92,7 +83,6 @@ const route = useRoute();
 const settingStore = useSettingStore();
 const userStore = useUserStore();
 const uiStore = useUiStore();
-const emailStore = useEmailStore();
 const logoutLoading = ref(false)
 const userInfoShow = ref(false)
 const userinfoRef = ref({})
@@ -189,10 +179,6 @@ function changeLang(lang) {
   settingStore.lang = lang
 }
 
-function openNotice() {
-  uiStore.showNotice()
-}
-
 function openDark(e) {
 
   const nextIsDark = !uiStore.dark
@@ -232,22 +218,6 @@ function switchDark(nextIsDark, root) {
   const isMobile =  !window.matchMedia("(pointer: fine) and (hover: hover)").matches;
   metaTag.setAttribute('content', nextIsDark ? (isMobile ? '#141414' : '#000000') : (isMobile ? '#FFFFFF' : '#F1F1F1'));
   uiStore.dark = nextIsDark
-}
-
-function openSend() {
-  uiStore.writerRef.open()
-}
-
-function dblClickSend() {
-  localStorage.setItem('compose-data', JSON.stringify({
-    composeMode: 'new',
-    email: {}
-  }))
-  const url = `${window.location.origin}/compose`
-  const win = window.open(url, '_blank', 'width=900,height=750')
-  if (win) {
-    win.focus()
-  }
 }
 
 function changeAside() {
@@ -375,37 +345,7 @@ function formatName(email) {
   display: grid;
   height: 100%;
   gap: 10px;
-  grid-template-columns: auto auto 1fr;
-}
-
-.header.not-send {
   grid-template-columns: auto 1fr;
-}
-
-.writer-box {
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: 5px;
-
-  .writer {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    color: #ffffff;
-    background: linear-gradient(135deg, #1890ff, #3a80dd);
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    .writer-text {
-      margin-left: 15px;
-      font-size: 14px;
-      font-weight: bold;;
-    }
-  }
 }
 
 .header-btn {

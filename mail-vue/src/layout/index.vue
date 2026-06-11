@@ -53,10 +53,24 @@ onBeforeUnmount(() => {
 
 function handleMessage(event) {
   if (event.origin !== window.location.origin) return
-  if (event.data.type === 'reply' && event.data.email) {
-    uiStore.writerRef.openReply(event.data.email)
-  } else if (event.data.type === 'forward' && event.data.email) {
-    uiStore.writerRef.openForward(event.data.email)
+  if (event.data.type === 'compose-action') {
+    checkComposeAction()
+  }
+}
+
+function checkComposeAction() {
+  const raw = localStorage.getItem('compose-action')
+  if (!raw) return
+  try {
+    const data = JSON.parse(raw)
+    localStorage.removeItem('compose-action')
+    if (data.type === 'reply' && data.email) {
+      uiStore.writerRef.openReply(data.email)
+    } else if (data.type === 'forward' && data.email) {
+      uiStore.writerRef.openForward(data.email)
+    }
+  } catch (e) {
+    localStorage.removeItem('compose-action')
   }
 }
 </script>

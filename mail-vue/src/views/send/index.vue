@@ -1,52 +1,80 @@
 <template>
-  <emailScroll ref="sendScroll"
-               :cancel-success="cancelStar"
-               :star-success="addStar"
-               :getEmailList="getEmailList"
-               :emailDelete="emailDelete"
-               :star-add="starAdd"
-               show-status
-               actionLeft="4px"
-               :star-cancel="starCancel"
-               @jump="jumpContent"
-               :time-sort="params.timeSort"
-               :type="'send'"
-  >
-    <template #first>
-      <Icon class="icon" @click="changeTimeSort" icon="material-symbols-light:timer-arrow-down-outline"
-            v-if="params.timeSort === 0" width="28" height="28"/>
-      <Icon class="icon" @click="changeTimeSort" icon="material-symbols-light:timer-arrow-up-outline" v-else
-            width="28" height="28"/>
-    </template>
-  </emailScroll>
+  <div class="email-split" :class="{ 'has-detail': selectedEmail, 'is-resizing': isResizing }">
+    <div class="email-list-panel" :style="selectedEmail ? { width: panelWidth + 'px', flexShrink: 0 } : {}">
+      <emailScroll ref="sendScroll"
+                  :cancel-success="cancelStar"
+                  :star-success="addStar"
+                  :getEmailList="getEmailList"
+                  :emailDelete="emailDelete"
+                  :star-add="starAdd"
+                  show-status
+                  actionLeft="4px"
+                  :star-cancel="starCancel"
+                  @jump="onJump"
+                  @dblclick="onDblClick"
+                  :time-sort="params.timeSort"
+                  :type="'send'"
+      >
+        <template #first>
+          <Icon class="icon" @click="changeTimeSort" icon="material-symbols-light:timer-arrow-down-outline"
+                v-if="params.timeSort === 0" width="28" height="28"/>
+          <Icon class="icon" @click="changeTimeSort" icon="material-symbols-light:timer-arrow-up-outline" v-else
+                width="28" height="28"/>
+        </template>
+      </emailScroll>
+    </div>
+    <div class="resize-handle" v-if="selectedEmail"
+      @mousedown="startResize"
+      @touchstart="handleTouchStart"
+      @dblclick.stop="closeDetail"
+    >
+      <div class="resize-line"></div>
+    </div>
+    <div class="email-detail-panel" v-if="selectedEmail">
+      <EmailDetail
+        :email="selectedEmail"
+        :show-star="true"
+        :show-reply="true"
+        :show-delete="false"
+        @close="closeDetail"
+        @reply="openReply"
+        @forward="openForward"
+        @star-change="onStarChange"
+      />
+    </div>
+  </div>
 </template>
 
 <script setup>
 import {useAccountStore} from "@/store/account.js";
 import {useEmailStore} from "@/store/email.js";
 import emailScroll from "@/components/email-scroll/index.vue"
+import EmailDetail from "@/components/email-detail/index.vue"
 import {emailList, emailDelete} from "@/request/email.js";
 import {starAdd, starCancel} from "@/request/star.js";
 import {defineOptions, onMounted, reactive, ref, watch} from "vue";
-import router from "@/router/index.js";
 import {Icon} from "@iconify/vue";
+import {useUiStore} from "@/store/ui.js";
+import { useSplitPane } from '@/utils/useSplitPane.js'
 
-defineOptions({
-  name: 'send'
-})
+defineOptions({ name: 'send' })
 
 const emailStore = useEmailStore();
 const accountStore = useAccountStore();
+const uiStore = useUiStore();
 const sendScroll = ref({})
-const params = reactive({
-  timeSort: 0,
-})
+const params = reactive({ timeSort: 0 })
 
-onMounted(() => {
-  emailStore.sendScroll = sendScroll;
-})
+const {
+  selectedEmail, panelWidth, isResizing,
+  setEmail, closeDetail, dblClickContent,
+  startResize, handleTouchStart
+} = useSplitPane()
+
+onMounted(() => { emailStore.sendScroll = sendScroll; })
 
 watch(() => accountStore.currentAccountId, () => {
+  closeDetail()
   sendScroll.value.refreshList();
 })
 
@@ -55,24 +83,30 @@ function changeTimeSort() {
   sendScroll.value.refreshList();
 }
 
-function jumpContent(email) {
-  emailStore.contentData.email = email
-  emailStore.contentData.delType = 'logic'
-  emailStore.contentData.showStar = true
-  emailStore.contentData.showReply = true
-  router.push('/message')
+function onJump(email) {
+  setEmail(email, { delType: 'logic', showStar: true, showReply: true, showUnread: true })
 }
 
-function addStar(email) {
-  emailStore.starScroll?.addItem(email)
+function onDblClick(email) {
+  dblClickContent(email, { delType: 'logic', showStar: true, showReply: true, showUnread: true })
 }
 
-function cancelStar(email) {
-  emailStore.starScroll?.deleteEmail([email.emailId])
+function openReply(email) { uiStore.writerRef.openReply(email) }
+function openForward(email) { uiStore.writerRef.openForward(email) }
+
+function onStarChange(email) {
+  if (email.isStar) {
+    emailStore.starScroll?.addItem(email)
+  } else {
+    emailStore.starScroll?.deleteEmail([email.emailId])
+  }
 }
+
+function addStar(email) { emailStore.starScroll?.addItem(email) }
+function cancelStar(email) { emailStore.starScroll?.deleteEmail([email.emailId]) }
 
 function getEmailList(emailId, size) {
-  const accountId =  accountStore.currentAccountId;
+  const accountId = accountStore.currentAccountId;
   const allReceive = accountStore.currentAccount.allReceive;
   return emailList(accountId, allReceive, emailId, params.timeSort, size, 1).then(data => {
     data.latestEmail.reqAccountId = accountId;
@@ -80,11 +114,42 @@ function getEmailList(emailId, size) {
     return data;
   })
 }
-
 </script>
+<style scoped lang="scss">
+.email-split {
+  display: flex;
+  height: 100%;
+  overflow: hidden;
 
-<style scoped>
-.icon {
-  cursor: pointer;
+  &.has-detail {
+    .email-list-panel {
+      @media (max-width: 1023px) { display: none; }
+    }
+  }
+
+  &.is-resizing { * { pointer-events: none; } }
+
+  .email-list-panel {
+    flex: 1;
+    min-width: 300px;
+    overflow: hidden;
+  }
+
+  .resize-handle {
+    width: 6px;
+    cursor: col-resize;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    &:hover .resize-line, &:active .resize-line { background: var(--el-color-primary); width: 3px; }
+    .resize-line { width: 1px; height: 100%; background: var(--el-border-color); transition: all 0.15s ease; }
+  }
+
+  .email-detail-panel { flex: 1; min-width: 280px; overflow: hidden; background: var(--el-bg-color); }
 }
+
+.icon { cursor: pointer; }
 </style>

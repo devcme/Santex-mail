@@ -39,15 +39,23 @@ function handleClose() {
 }
 
 function handleReply(emailData) {
+  localStorage.setItem('compose-action', JSON.stringify({
+    type: 'reply',
+    email: JSON.parse(JSON.stringify(emailData))
+  }))
   if (window.opener && !window.opener.closed) {
-    window.opener.postMessage({ type: 'reply', email: emailData }, window.location.origin)
+    window.opener.postMessage({ type: 'compose-action' }, window.location.origin)
   }
   window.close()
 }
 
 function handleForward(emailData) {
+  localStorage.setItem('compose-action', JSON.stringify({
+    type: 'forward',
+    email: JSON.parse(JSON.stringify(emailData))
+  }))
   if (window.opener && !window.opener.closed) {
-    window.opener.postMessage({ type: 'forward', email: emailData }, window.location.origin)
+    window.opener.postMessage({ type: 'compose-action' }, window.location.origin)
   }
   window.close()
 }

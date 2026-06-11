@@ -1,6 +1,6 @@
 <template>
-  <div class="email-split" :class="{ 'has-detail': selectedEmail }">
-    <div class="email-list-panel" :class="{ 'collapsed': selectedEmail }">
+  <div class="email-split" :class="{ 'has-detail': selectedEmail, 'is-resizing': isResizing }">
+    <div class="email-list-panel" :style="selectedEmail ? { width: panelWidth + 'px', flexShrink: 0 } : {}">
       <emailScroll ref="scroll"
                   :cancel-success="cancelStar"
                   :star-success="addStar"
@@ -12,8 +12,8 @@
                   :email-read="emailRead"
                   :show-unread="true"
                   actionLeft="4px"
-                  @jump="jumpContent"
-                  @dblclick="dblClickContent"
+                  @jump="onJump"
+                  @dblclick="onDblClick"
       >
         <template #first>
           <Icon class="icon" @click="changeTimeSort" icon="material-symbols-light:timer-arrow-down-outline"
@@ -22,6 +22,13 @@
                 width="28" height="28"/>
         </template>
       </emailScroll>
+    </div>
+    <div class="resize-handle" v-if="selectedEmail"
+      @mousedown="startResize"
+      @touchstart="handleTouchStart"
+      @dblclick.stop="closeDetail"
+    >
+      <div class="resize-line"></div>
     </div>
     <div class="email-detail-panel" v-if="selectedEmail">
       <EmailDetail
@@ -32,8 +39,8 @@
         :show-delete="true"
         :del-type="'logic'"
         @close="closeDetail"
-        @reply="openReplyInOverlay"
-        @forward="openForwardInOverlay"
+        @reply="openReply"
+        @forward="openForward"
         @delete="handleDetailDelete"
         @star-change="onStarChange"
       />
@@ -51,30 +58,33 @@ import {emailList, emailDelete, emailLatest, emailRead} from "@/request/email.js
 import {starAdd, starCancel} from "@/request/star.js";
 import {defineOptions, onMounted, reactive, ref, watch} from "vue";
 import {sleep} from "@/utils/time-utils.js";
-import {useRouter} from 'vue-router'
 import {Icon} from "@iconify/vue";
 import { useRoute } from 'vue-router'
 import {ElMessage, ElMessageBox} from 'element-plus'
 import {useUiStore} from "@/store/ui.js";
 import {useI18n} from "vue-i18n";
+import { useSplitPane } from '@/utils/useSplitPane.js'
 
 defineOptions({
   name: 'email'
 })
 
 const route = useRoute();
-const router = useRouter();
 const emailStore = useEmailStore();
 const accountStore = useAccountStore();
 const settingStore = useSettingStore();
 const uiStore = useUiStore();
 const scroll = ref({})
-const selectedEmail = ref(null)
 const params = reactive({
   timeSort: 0,
 })
 
 const { t } = useI18n()
+const {
+  selectedEmail, panelWidth, isResizing,
+  setEmail, closeDetail, dblClickContent,
+  startResize, handleTouchStart
+} = useSplitPane()
 
 onMounted(() => {
   emailStore.emailScroll = scroll;
@@ -91,39 +101,19 @@ function changeTimeSort() {
   scroll.value.refreshList();
 }
 
-function jumpContent(email) {
-  emailStore.contentData.email = email
-  emailStore.contentData.delType = 'logic'
-  emailStore.contentData.showUnread = true
-  emailStore.contentData.showStar = true
-  emailStore.contentData.showReply = true
-  selectedEmail.value = email
+function onJump(email) {
+  setEmail(email, { delType: 'logic', showStar: true, showReply: true, showUnread: true })
 }
 
-function dblClickContent(email) {
-  const emailData = JSON.parse(JSON.stringify(email))
-  emailStore.contentData.email = emailData
-  emailStore.contentData.delType = 'logic'
-  emailStore.contentData.showUnread = true
-  emailStore.contentData.showStar = true
-  emailStore.contentData.showReply = true
-
-  const url = `${window.location.origin}/detail`
-  const win = window.open(url, '_blank', 'width=800,height=700')
-  if (win) {
-    win.focus()
-  }
+function onDblClick(email) {
+  dblClickContent(email, { delType: 'logic', showStar: true, showReply: true, showUnread: true })
 }
 
-function closeDetail() {
-  selectedEmail.value = null
-}
-
-function openReplyInOverlay(email) {
+function openReply(email) {
   uiStore.writerRef.openReply(email)
 }
 
-function openForwardInOverlay(email) {
+function openForward(email) {
   uiStore.writerRef.openForward(email)
 }
 
@@ -133,17 +123,15 @@ function handleDetailDelete(email) {
     cancelButtonText: t('cancel'),
     type: 'warning'
   }).then(() => {
-    if (emailStore.contentData.delType === 'logic') {
-      emailDelete(email.emailId).then(() => {
-        ElMessage({
-          message: t('delSuccessMsg'),
-          type: 'success',
-          plain: true,
-        })
-        emailStore.deleteIds = [email.emailId]
-        closeDetail()
+    emailDelete(email.emailId).then(() => {
+      ElMessage({
+        message: t('delSuccessMsg'),
+        type: 'success',
+        plain: true,
       })
-    }
+      emailStore.deleteIds = [email.emailId]
+      closeDetail()
+    })
   })
 }
 
@@ -163,13 +151,10 @@ const existIds = new Set();
 
 async function latest() {
   while (true) {
-
     let autoRefresh = settingStore.settings.autoRefresh;
     await sleep(autoRefresh > 1 ? autoRefresh * 1000 : 3000);
 
-    if (route.name !== 'email') {
-      continue;
-    }
+    if (route.name !== 'email') continue;
 
     const latestId = scroll.value.latestEmail?.emailId
 
@@ -186,45 +171,30 @@ async function latest() {
 
         if (accountId === accountStore.currentAccountId && params.timeSort === curTimeSort && allReceive === accountStore.currentAccount.allReceive) {
           if (list.length > 0) {
-
             for (let email of list) {
-
               email.reqAccountId = accountId;
               email.allReceive = allReceive;
-
               if (!existIds.has(email.emailId)) {
-
                 existIds.add(email.emailId)
                 scroll.value.addItem(email)
-
                 await sleep(50)
               }
-
             }
-
           }
-
         }
       } catch (e) {
-        if (e.code === 401 || e.code === 403) {
-          settingStore.settings.autoRefresh = 0;
-        }
+        if (e.code === 401 || e.code === 403) settingStore.settings.autoRefresh = 0;
         console.error(e)
       }
     }
   }
 }
 
-function addStar(email) {
-  emailStore.starScroll?.addItem(email)
-}
-
-function cancelStar(email) {
-  emailStore.starScroll?.deleteEmail([email.emailId])
-}
+function addStar(email) { emailStore.starScroll?.addItem(email) }
+function cancelStar(email) { emailStore.starScroll?.deleteEmail([email.emailId]) }
 
 function getEmailList(emailId, size) {
-  const accountId =  accountStore.currentAccountId;
+  const accountId = accountStore.currentAccountId;
   const allReceive = accountStore.currentAccount.allReceive;
   return emailList(accountId, allReceive, emailId, params.timeSort, size, 0).then(data => {
     data.latestEmail.reqAccountId = accountId;
@@ -232,7 +202,6 @@ function getEmailList(emailId, size) {
     return data;
   })
 }
-
 </script>
 <style scoped lang="scss">
 .email-split {
@@ -242,33 +211,56 @@ function getEmailList(emailId, size) {
 
   &.has-detail {
     .email-list-panel {
-      width: 380px;
-      min-width: 340px;
-      flex-shrink: 0;
-      border-right: 1px solid var(--el-border-color);
-
+      border-right: none;
       @media (max-width: 1023px) {
         display: none;
       }
     }
   }
 
+  &.is-resizing {
+    * { pointer-events: none; }
+  }
+
   .email-list-panel {
     flex: 1;
-    min-width: 0;
+    min-width: 300px;
     overflow: hidden;
-    transition: width 0.2s ease;
+    transition: none;
+  }
+
+  .resize-handle {
+    width: 6px;
+    cursor: col-resize;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover, &:active {
+      .resize-line {
+        background: var(--el-color-primary);
+        width: 3px;
+      }
+    }
+
+    .resize-line {
+      width: 1px;
+      height: 100%;
+      background: var(--el-border-color);
+      transition: all 0.15s ease;
+    }
   }
 
   .email-detail-panel {
     flex: 1;
-    min-width: 0;
+    min-width: 280px;
     overflow: hidden;
     background: var(--el-bg-color);
   }
 }
 
-.icon {
-  cursor: pointer;
-}
+.icon { cursor: pointer; }
 </style>

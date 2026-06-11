@@ -1,0 +1,110 @@
+import { ref } from 'vue'
+import { useEmailStore } from '@/store/email.js'
+
+const PANEL_KEY = 'split-panel-width'
+
+export function useSplitPane() {
+  const emailStore = useEmailStore()
+  const selectedEmail = ref(null)
+  const panelWidth = ref(parseInt(localStorage.getItem(PANEL_KEY)) || 420)
+  const isResizing = ref(false)
+  let startX = 0
+  let startWidth = 0
+
+  function setEmail(email, opts = {}) {
+    emailStore.contentData.email = email
+    if (opts.delType != null) emailStore.contentData.delType = opts.delType
+    if (opts.showStar != null) emailStore.contentData.showStar = opts.showStar
+    if (opts.showReply != null) emailStore.contentData.showReply = opts.showReply
+    emailStore.contentData.showUnread = opts.showUnread ?? true
+    selectedEmail.value = email
+  }
+
+  function closeDetail() {
+    selectedEmail.value = null
+  }
+
+  function dblClickContent(email, opts = {}) {
+    const emailData = JSON.parse(JSON.stringify(email))
+    emailStore.contentData.email = emailData
+    if (opts.delType != null) emailStore.contentData.delType = opts.delType
+    if (opts.showStar != null) emailStore.contentData.showStar = opts.showStar
+    if (opts.showReply != null) emailStore.contentData.showReply = opts.showReply
+    emailStore.contentData.showUnread = opts.showUnread ?? true
+
+    const url = `${window.location.origin}/detail`
+    const win = window.open(url, '_blank', 'width=800,height=700')
+    if (win) win.focus()
+  }
+
+  function startResize(e) {
+    if (e.button !== 0) return
+    e.preventDefault()
+    isResizing.value = true
+    startX = e.clientX
+    startWidth = panelWidth.value
+    document.addEventListener('mousemove', onResize)
+    document.addEventListener('mouseup', stopResize)
+    document.body.style.cursor = 'col-resize'
+    document.body.style.userSelect = 'none'
+  }
+
+  function onResize(e) {
+    if (!isResizing.value) return
+    const delta = e.clientX - startX
+    const newWidth = Math.max(0, Math.min(startWidth - delta, window.innerWidth - 200))
+    panelWidth.value = newWidth
+  }
+
+  function stopResize() {
+    if (!isResizing.value) return
+    isResizing.value = false
+    document.removeEventListener('mousemove', onResize)
+    document.removeEventListener('mouseup', stopResize)
+    document.body.style.cursor = ''
+    document.body.style.userSelect = ''
+
+    if (panelWidth.value < 60) {
+      closeDetail()
+      panelWidth.value = parseInt(localStorage.getItem(PANEL_KEY)) || 420
+    } else if (panelWidth.value > window.innerWidth - 100) {
+      panelWidth.value = window.innerWidth - 100
+    }
+
+    localStorage.setItem(PANEL_KEY, panelWidth.value)
+  }
+
+  function handleTouchStart(e) {
+    if (e.touches.length !== 1) return
+    e.preventDefault()
+    isResizing.value = true
+    startX = e.touches[0].clientX
+    startWidth = panelWidth.value
+    document.addEventListener('touchmove', onTouchMove, { passive: false })
+    document.addEventListener('touchend', onTouchEnd)
+  }
+
+  function onTouchMove(e) {
+    if (!isResizing.value) return
+    const delta = e.touches[0].clientX - startX
+    const newWidth = Math.max(0, Math.min(startWidth - delta, window.innerWidth - 200))
+    panelWidth.value = newWidth
+  }
+
+  function onTouchEnd() {
+    stopResize()
+    document.removeEventListener('touchmove', onTouchMove)
+    document.removeEventListener('touchend', onTouchEnd)
+  }
+
+  return {
+    selectedEmail,
+    panelWidth,
+    isResizing,
+    setEmail,
+    closeDetail,
+    dblClickContent,
+    startResize,
+    handleTouchStart
+  }
+}
