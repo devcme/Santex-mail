@@ -791,6 +791,8 @@ function updateCheckStatus() {
   isIndeterminate.value = checkedCount > 0 && checkedCount < emailList.length;
 }
 
+let clickTimer = null
+
 function jumpDetails(email) {
 
   if (dropdownShow.value) {
@@ -804,11 +806,20 @@ function jumpDetails(email) {
       return
     }
   }
-  emit('jump', email)
+
+  if (clickTimer) clearTimeout(clickTimer)
+  clickTimer = setTimeout(() => {
+    clickTimer = null
+    emit('jump', email)
+  }, 250)
 }
 
 function handleDblClick(event, email) {
   event.preventDefault()
+  if (clickTimer) {
+    clearTimeout(clickTimer)
+    clickTimer = null
+  }
   emit('dblclick', email)
 }
 

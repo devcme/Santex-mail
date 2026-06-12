@@ -40,6 +40,7 @@ export function useSplitPane() {
   function startResize(e) {
     if (e.button !== 0) return
     e.preventDefault()
+    e.stopPropagation()
     isResizing.value = true
     startX = e.clientX
     startWidth = panelWidth.value
@@ -51,9 +52,12 @@ export function useSplitPane() {
 
   function onResize(e) {
     if (!isResizing.value) return
-    const delta = e.clientX - startX
-    const newWidth = Math.max(0, Math.min(startWidth - delta, window.innerWidth - 200))
+    const delta = startX - e.clientX
+    const newWidth = Math.max(280, Math.min(startWidth + delta, window.innerWidth - 320))
     panelWidth.value = newWidth
+    if (newWidth <= 285) {
+      closeDetail()
+    }
   }
 
   function stopResize() {
@@ -64,11 +68,10 @@ export function useSplitPane() {
     document.body.style.cursor = ''
     document.body.style.userSelect = ''
 
-    if (panelWidth.value < 60) {
-      closeDetail()
-      panelWidth.value = parseInt(localStorage.getItem(PANEL_KEY)) || 420
-    } else if (panelWidth.value > window.innerWidth - 100) {
-      panelWidth.value = window.innerWidth - 100
+    if (panelWidth.value <= 285) {
+      panelWidth.value = Math.max(280, parseInt(localStorage.getItem(PANEL_KEY)) || 420)
+    } else if (panelWidth.value > window.innerWidth - 320) {
+      panelWidth.value = window.innerWidth - 320
     }
 
     localStorage.setItem(PANEL_KEY, panelWidth.value)
@@ -86,9 +89,12 @@ export function useSplitPane() {
 
   function onTouchMove(e) {
     if (!isResizing.value) return
-    const delta = e.touches[0].clientX - startX
-    const newWidth = Math.max(0, Math.min(startWidth - delta, window.innerWidth - 200))
+    const delta = startX - e.touches[0].clientX
+    const newWidth = Math.max(280, Math.min(startWidth + delta, window.innerWidth - 320))
     panelWidth.value = newWidth
+    if (newWidth <= 285) {
+      closeDetail()
+    }
   }
 
   function onTouchEnd() {

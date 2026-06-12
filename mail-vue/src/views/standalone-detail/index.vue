@@ -46,7 +46,7 @@ function handleReply(emailData) {
   if (window.opener && !window.opener.closed) {
     window.opener.postMessage({ type: 'compose-action' }, window.location.origin)
   }
-  window.close()
+  setTimeout(() => window.close(), 80)
 }
 
 function handleForward(emailData) {
@@ -57,7 +57,7 @@ function handleForward(emailData) {
   if (window.opener && !window.opener.closed) {
     window.opener.postMessage({ type: 'compose-action' }, window.location.origin)
   }
-  window.close()
+  setTimeout(() => window.close(), 80)
 }
 
 function onStarChange() {}

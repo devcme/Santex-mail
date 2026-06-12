@@ -136,15 +136,17 @@ function getEmailList(emailId, size) {
   }
 
   .resize-handle {
-    width: 6px;
+    width: 8px;
     cursor: col-resize;
     flex-shrink: 0;
     position: relative;
     z-index: 10;
+    background: transparent;
     display: flex;
     align-items: center;
     justify-content: center;
-    &:hover .resize-line, &:active .resize-line { background: var(--el-color-primary); width: 3px; }
+    &::after { content: ''; position: absolute; left: 0; right: 0; top: 0; bottom: 0; }
+    &:hover .resize-line { background: var(--el-color-primary); width: 3px; }
     .resize-line { width: 1px; height: 100%; background: var(--el-border-color); transition: all 0.15s ease; }
   }
 

@@ -105,7 +105,7 @@ function openCompose() {
   font-weight: bold;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  gap: 8px;
   color: #ffffff;
   cursor: pointer;
   background: linear-gradient(135deg, #1890ff, #3a80dd);
@@ -118,10 +118,6 @@ function openCompose() {
     text-overflow: ellipsis;
     max-width: calc(240px - 20px - 30px);
   }
-  :deep(.el-icon) {
-    flex-shrink: 0;
-    font-size: 20px;
-  }
 }
 
 .title-collapsed {
@@ -132,11 +128,10 @@ function openCompose() {
   padding: 0;
   max-width: 40px;
   justify-content: center;
-  > div { display: none; }
 }
 
 .fade-text-enter-active, .fade-text-leave-active {
-  transition: opacity 0.3s ease;
+  transition: opacity 0.25s ease;
 }
 .fade-text-enter-from, .fade-text-leave-to {
   opacity: 0;
@@ -146,6 +141,7 @@ function openCompose() {
   margin-top: 10px;
   padding-left: 20px;
   color: #fff;
+  font-size: 13px;
 }
 
 .el-menu-item {
@@ -153,6 +149,13 @@ function openCompose() {
   border-radius: 6px;
   height: 36px;
   padding: 10px !important;
+  gap: 10px;
+}
+
+:deep(.el-menu-item .el-menu-tooltip__trigger) {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .choose-item {
@@ -179,11 +182,12 @@ function openCompose() {
 
 :deep(.el-menu) {
   background: var(--aside-backgound);
+  transition: width 0.3s ease;
 }
 
 .el-menu {
   border-right: 0;
-  transition: width 0.3s ease;
+  width: 260px;
 }
 
 :deep(.el-menu--collapse) {
@@ -193,5 +197,9 @@ function openCompose() {
 :deep(.el-divider__text) {
   background: var(--aside-backgound);
   color: #FFFFFF;
+}
+
+.scroll {
+  min-height: 100vh;
 }
 </style>

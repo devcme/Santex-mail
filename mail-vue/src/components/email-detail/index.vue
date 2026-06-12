@@ -133,11 +133,22 @@ function handleClose() {
   emit('close')
 }
 
+let replyTimer = null
+let forwardTimer = null
+
 function handleReply() {
-  emit('reply', props.email)
+  if (replyTimer) clearTimeout(replyTimer)
+  replyTimer = setTimeout(() => {
+    replyTimer = null
+    emit('reply', props.email)
+  }, 250)
 }
 
 function handleDblReply() {
+  if (replyTimer) {
+    clearTimeout(replyTimer)
+    replyTimer = null
+  }
   localStorage.setItem('compose-data', JSON.stringify({
     composeMode: 'reply',
     email: JSON.parse(JSON.stringify(props.email))
@@ -150,10 +161,18 @@ function handleDblReply() {
 }
 
 function handleForward() {
-  emit('forward', props.email)
+  if (forwardTimer) clearTimeout(forwardTimer)
+  forwardTimer = setTimeout(() => {
+    forwardTimer = null
+    emit('forward', props.email)
+  }, 250)
 }
 
 function handleDblForward() {
+  if (forwardTimer) {
+    clearTimeout(forwardTimer)
+    forwardTimer = null
+  }
   localStorage.setItem('compose-data', JSON.stringify({
     composeMode: 'forward',
     email: JSON.parse(JSON.stringify(props.email))

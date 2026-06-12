@@ -2,7 +2,7 @@
   <el-container class="layout">
     <el-aside
         class="aside"
-        :class="uiStore.asideShow ? 'aside-show' : 'el-aside-hide'">
+        :class="uiStore.asideShow ? 'aside-show' : 'aside-narrow'">
       <Aside />
     </el-aside>
     <div
@@ -76,21 +76,10 @@ function checkComposeAction() {
 </script>
 
 <style lang="scss" scoped>
-.el-aside-hide {
-  position: fixed;
-  left: 0;
-  height: 100%;
-  z-index: 100;
-  transform: translateX(-100%);
-  transition: all 100ms ease;
-}
+.aside-narrow {
+  overflow: hidden;
+  transition: width 0.3s ease, box-shadow 0.3s ease;
 
-.aside-show {
-  -webkit-box-shadow: var(--aside-right-border);
-  box-shadow: var(--aside-right-border);
-  transform: translateX(0);
-  transition: all 100ms ease;
-  z-index: 101;
   @media (max-width: 1025px) {
     position: fixed;
     top: 0;
@@ -98,12 +87,30 @@ function checkComposeAction() {
     z-index: 101;
     height: 100%;
     background: var(--el-bg-color);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
   }
 }
 
-.el-aside {
+.aside-show {
+  -webkit-box-shadow: var(--aside-right-border);
+  box-shadow: var(--aside-right-border);
+  transition: width 0.3s ease, box-shadow 0.3s ease;
+  z-index: 101;
+
+  @media (max-width: 1025px) {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 101;
+    height: 100%;
+    background: var(--el-bg-color);
+    transform: translateX(0);
+  }
+}
+
+.aside {
   width: auto;
-  transition: all 100ms ease;
 }
 
 .layout {
