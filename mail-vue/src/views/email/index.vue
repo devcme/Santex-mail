@@ -11,8 +11,9 @@
                   :time-sort="params.timeSort"
                   :email-read="emailRead"
                   :show-unread="true"
-                  actionLeft="4px"
-                  @jump="onJump"
+                   actionLeft="4px"
+                   :split-active="!!selectedEmail"
+                   @jump="onJump"
                   @dblclick="onDblClick"
       >
         <template #first>

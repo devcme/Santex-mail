@@ -243,6 +243,7 @@ const zh = {
     sendSuccessMsg: '发送成功',
     sendFailMsg: '发送失败',
     saveDraftConfirm: '是否保存草稿？',
+    discardContentConfirm: '确定要丢弃未保存的内容吗？',
     delEmailsConfirm: '确认删除选中的邮件吗？',
     delOneEmailConfirm: '确认删除这个邮件吗？',
     sending: '邮件正在发送中',

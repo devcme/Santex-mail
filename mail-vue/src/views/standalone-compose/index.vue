@@ -8,8 +8,18 @@
           <span class="sender-name">{{ form.name }}</span>
           <span class="sender-email"><{{ form.sendEmail }}></span>
         </div>
-        <div @click="close" style="cursor: pointer;">
-          <Icon icon="material-symbols-light:close-rounded" width="22" height="22"/>
+        <div class="header-actions">
+          <template v-if="hasContent">
+            <el-tooltip :content="$t('save')" placement="bottom">
+              <Icon icon="mdi:content-save-outline" width="22" height="22" @click="saveDraftLocal" style="cursor: pointer; color: var(--el-text-color-regular);" />
+            </el-tooltip>
+            <el-tooltip :content="$t('delete')" placement="bottom">
+              <Icon icon="mdi:trash-can-outline" width="22" height="22" @click="confirmDiscardLocal" style="cursor: pointer; color: var(--el-text-color-regular);" />
+            </el-tooltip>
+          </template>
+          <template v-else>
+            <Icon icon="material-symbols-light:close-rounded" width="22" height="22" @click="window.close()" style="cursor: pointer;"/>
+          </template>
         </div>
       </div>
       <div class="compose-container">
@@ -44,9 +54,9 @@
 </template>
 <script setup>
 import tinyEditor from '@/components/tiny-editor/index.vue'
-import { reactive, ref, onMounted } from "vue";
+import { reactive, ref, onMounted, computed } from "vue";
 import { Icon } from "@iconify/vue";
-import { ElMessage, ElNotification } from 'element-plus'
+import { ElMessage, ElNotification, ElMessageBox } from 'element-plus'
 import { useUserStore } from "@/store/user.js";
 import { emailSend } from "@/request/email.js";
 import { useAccountStore } from "@/store/account.js";
@@ -151,9 +161,9 @@ onMounted(() => {
     }
   }
 
-  window.addEventListener('keydown', handleKeyDown);
+  window.addEventListener('keydown', handleKeyDown, true);
   window.addEventListener('beforeunload', () => {
-    window.removeEventListener('keydown', handleKeyDown);
+    window.removeEventListener('keydown', handleKeyDown, true);
   })
 })
 
@@ -162,14 +172,40 @@ function onEditorChange(content, text) {
   form.text = text
 }
 
-function handleKeyDown(event) {
+const hasContent = computed(() => {
+  return !!(form.content || form.subject || form.receiveEmail.length > 0)
+})
+
+const handleKeyDown = (event) => {
   if (event.key === 'Escape') {
-    close()
+    event.stopPropagation()
+    if (hasContent.value) {
+      saveDraftLocal()
+    } else {
+      window.close()
+    }
   }
 }
 
-function close() {
+function saveDraftLocal() {
+  if (editor.value && editor.value.getContent) {
+    form.content = editor.value.getContent()
+  }
+  localStorage.setItem('compose-data', JSON.stringify({
+    composeMode: form.sendType || 'new',
+    email: JSON.parse(JSON.stringify(form))
+  }))
   window.close()
+}
+
+function confirmDiscardLocal() {
+  ElMessageBox.confirm(t('discardContentConfirm'), {
+    confirmButtonText: t('confirm'),
+    cancelButtonText: t('cancel'),
+    type: 'warning'
+  }).then(() => {
+    window.close()
+  })
 }
 
 function formatImage(content) {

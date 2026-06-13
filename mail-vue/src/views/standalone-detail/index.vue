@@ -21,7 +21,7 @@
 
 <script setup>
 import EmailDetail from '@/components/email-detail/index.vue'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useEmailStore } from '@/store/email.js'
 import { useUiStore } from '@/store/ui.js'
 
@@ -32,7 +32,18 @@ const contentData = ref({})
 onMounted(() => {
   email.value = emailStore.contentData.email
   contentData.value = emailStore.contentData || {}
+  window.addEventListener('keydown', handleKeyDown, true)
 })
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeyDown, true)
+})
+
+function handleKeyDown(event) {
+  if (event.key === 'Escape') {
+    window.close()
+  }
+}
 
 function handleClose() {
   window.close()

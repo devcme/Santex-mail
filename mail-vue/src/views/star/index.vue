@@ -9,9 +9,10 @@
                   :star-add="starAdd"
                   :star-cancel="starCancel"
                   @jump="onJump"
-                  @dblclick="onDblClick"
-                  actionLeft="6px"
-                  :show-account-icon="false"
+                   @dblclick="onDblClick"
+                   actionLeft="6px"
+                   :split-active="!!selectedEmail"
+                   :show-account-icon="false"
       />
     </div>
     <div class="resize-handle" v-if="selectedEmail"

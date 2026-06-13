@@ -73,9 +73,9 @@
             </div>
           </div>
           <div>
-            <el-button type="primary" @click="sendEmail" v-if="form.sendType === 'reply'">{{ $t('reply') }}</el-button>
-            <el-button type="primary" @click="sendEmail" v-else-if="form.sendType === 'forward'">{{ $t('forward') }}</el-button>
-            <el-button type="primary" @click="sendEmail" v-else>{{ $t('send') }}</el-button>
+            <el-button type="primary" @click="sendEmail" @dblclick.stop="openInNewWindow" v-if="form.sendType === 'reply'">{{ $t('reply') }}</el-button>
+            <el-button type="primary" @click="sendEmail" @dblclick.stop="openInNewWindow" v-else-if="form.sendType === 'forward'">{{ $t('forward') }}</el-button>
+            <el-button type="primary" @click="sendEmail" @dblclick.stop="openInNewWindow" v-else>{{ $t('send') }}</el-button>
           </div>
         </div>
       </div>
@@ -541,7 +541,8 @@ function openDraft(draft) {
 }
 
 const handleKeyDown = (event) => {
-  if (event.key === 'Escape') {
+  if (event.key === 'Escape' && show.value) {
+    event.stopPropagation()
     if (hasContent.value) {
       saveDraft()
     } else {
@@ -552,11 +553,11 @@ const handleKeyDown = (event) => {
 };
 
 onMounted(() => {
-  window.addEventListener('keydown', handleKeyDown);
+  window.addEventListener('keydown', handleKeyDown, true)
 });
 
 onUnmounted(() => {
-  window.removeEventListener('keydown', handleKeyDown);
+  window.removeEventListener('keydown', handleKeyDown, true);
 });
 
 const hasContent = computed(() => {
@@ -588,7 +589,7 @@ async function saveDraft() {
 }
 
 function confirmDiscard() {
-  ElMessageBox.confirm(t('delEmailsConfirm'), {
+  ElMessageBox.confirm(t('discardContentConfirm'), {
     confirmButtonText: t('confirm'),
     cancelButtonText: t('cancel'),
     type: 'warning'
@@ -606,6 +607,19 @@ function close() {
     return
   }
   saveDraft()
+}
+
+function openInNewWindow() {
+  if (editor.value && editor.value.getContent) {
+    form.content = editor.value.getContent()
+  }
+  localStorage.setItem('compose-action', JSON.stringify({
+    type: form.sendType || 'new',
+    email: JSON.parse(JSON.stringify(form))
+  }))
+  const url = `${window.location.origin}/compose`
+  const win = window.open(url, '_blank', 'width=900,height=750')
+  if (win) win.focus()
 }
 
 </script>

@@ -243,6 +243,7 @@ const en = {
     sendSuccessMsg: 'Send successful',
     sendFailMsg: 'Send failed',
     saveDraftConfirm: 'Save draft?',
+    discardContentConfirm: 'Discard unsaved content?',
     delEmailsConfirm: 'Confirm deletion of selected emails?',
     delOneEmailConfirm: 'Confirm deletion of this email?',
     sending: 'Sending email...',

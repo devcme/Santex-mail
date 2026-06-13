@@ -5,8 +5,9 @@
                :emailDelete="emailDelete"
                :star-add="starAdd"
                :star-cancel="starCancel"
-               @jump="jumpContent"
-               actionLeft="6px"
+                @jump="jumpContent"
+                @dblclick="openDraftWindow"
+                actionLeft="6px"
                :show-account-icon="false"
                :show-first-loading="false"
                :showStar="false"
@@ -86,6 +87,18 @@ async function jumpContent(email) {
   const att = await db.value.att.get(email.draftId)
   email.attachments = att.attachments
   uiStore.writerRef.openDraft(email);
+}
+
+async function openDraftWindow(email) {
+  const att = await db.value.att.get(email.draftId)
+  email.attachments = att.attachments
+  localStorage.setItem('compose-data', JSON.stringify({
+    composeMode: 'draft',
+    email: JSON.parse(JSON.stringify(email))
+  }))
+  const url = `${window.location.origin}/compose`
+  const win = window.open(url, '_blank', 'width=900,height=750')
+  if (win) win.focus()
 }
 
 </script>

@@ -295,6 +295,10 @@ const props = defineProps({
   showUnread: {
     type: Boolean,
     default: false
+  },
+  splitActive: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -812,10 +816,12 @@ function jumpDetails(email) {
     clickTimer = null
     return
   }
+  // 右侧已有分屏时无延时, 没有分屏时200ms延时等待双击
+  const delay = props.splitActive ? 0 : 200
   clickTimer = setTimeout(() => {
     clickTimer = null
     emit('jump', email)
-  }, 200)
+  }, delay)
 }
 
 function handleDblClick(event, email) {

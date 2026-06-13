@@ -8,9 +8,10 @@
                   :emailDelete="emailDelete"
                   :star-add="starAdd"
                   show-status
-                  actionLeft="4px"
-                  :star-cancel="starCancel"
-                  @jump="onJump"
+                   actionLeft="4px"
+                   :split-active="!!selectedEmail"
+                   :star-cancel="starCancel"
+                   @jump="onJump"
                   @dblclick="onDblClick"
                   :time-sort="params.timeSort"
                   :type="'send'"
