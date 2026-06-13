@@ -542,7 +542,12 @@ function openDraft(draft) {
 
 const handleKeyDown = (event) => {
   if (event.key === 'Escape') {
-    close()
+    if (hasContent.value) {
+      saveDraft()
+    } else {
+      show.value = false
+      resetForm()
+    }
   }
 };
 
