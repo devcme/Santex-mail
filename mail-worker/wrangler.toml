@@ -8,16 +8,16 @@ enabled = true
 
 #[[d1_databases]]
 #binding = "db"			#d1数据库绑定名默认不可修改
-#database_name = ""		#d1数据库名字
-#database_id = ""		#d1数据库id
+#database_name = "santex-mail-db"		#d1数据库名字
+#database_id = "7516e4b8-5a7e-4c74-84a3-41b7e687946a"		#d1数据库id
 
 #[[kv_namespaces]]
 #binding = "kv"			#kv绑定名默认不可修改
-#id = ""					#kv数据库id
+#id = "70e9fed5c94b49b9907119c91f436fb5"					#kv数据库id
 
 #[[r2_buckets]]
 #binding = "r2"			#r2对象存储绑定名默认不可修改
-#bucket_name = ""		#r2对象存储桶的名字
+#bucket_name = "santex-mail-r2"		#r2对象存储桶的名字
 
 #[[send_email]]
 #name = "email"			#CF发件, 配置后优先使用

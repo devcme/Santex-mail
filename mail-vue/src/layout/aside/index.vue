@@ -37,7 +37,7 @@
           <div class="manage-title" v-if="uiStore.asideShow" v-perm="['all-email:query','user:query','role:query','setting:query','analysis:query','reg-key:query']">
             <div>{{ $t('manage') }}</div>
           </div>
-          <el-divider v-else-if="!uiStore.asideShow" v-perm="['all-email:query','user:query','role:query','setting:query','analysis:query','reg-key:query']" style="border-color: rgba(255,255,255,0.2); margin: 8px 10px" />
+          <div class="manage-divider" v-else v-perm="['all-email:query','user:query','role:query','setting:query','analysis:query','reg-key:query']"></div>
         </transition>
         <el-menu-item @click="router.push({name: 'analysis'})" index="analysis" v-perm="'analysis:query'"
                       :class="route.meta.name === 'analysis' ? 'choose-item' : ''">
@@ -142,20 +142,39 @@ function openCompose() {
   padding-left: 20px;
   color: #fff;
   font-size: 13px;
+  height: 20px;
+}
+
+.manage-divider {
+  margin: 10px 10px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .el-menu-item {
-  margin: 5px 10px !important;
+  margin: 5px 10px;
   border-radius: 6px;
-  height: 36px;
-  padding: 10px !important;
+  height: 38px;
+  display: flex;
+  align-items: center;
+}
+
+.el-menu:not(.el-menu--collapse) .el-menu-item {
+  padding: 0 10px !important;
   gap: 10px;
+}
+
+:deep(.el-menu--collapse) .el-menu-item {
+  justify-content: center;
+  padding: 0 !important;
 }
 
 :deep(.el-menu-item .el-menu-tooltip__trigger) {
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  width: 100%;
+  padding: 0 !important;
 }
 
 .choose-item {
@@ -187,11 +206,11 @@ function openCompose() {
 
 .el-menu {
   border-right: 0;
-  width: 260px;
+  width: 100%;
 }
 
 :deep(.el-menu--collapse) {
-  width: 64px;
+  width: 100%;
 }
 
 :deep(.el-divider__text) {

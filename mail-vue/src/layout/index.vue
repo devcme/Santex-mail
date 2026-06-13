@@ -77,8 +77,9 @@ function checkComposeAction() {
 
 <style lang="scss" scoped>
 .aside-narrow {
+  width: 64px !important;
   overflow: hidden;
-  transition: width 0.3s ease, box-shadow 0.3s ease;
+  transition: width 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
 
   @media (max-width: 1025px) {
     position: fixed;
@@ -88,14 +89,14 @@ function checkComposeAction() {
     height: 100%;
     background: var(--el-bg-color);
     transform: translateX(-100%);
-    transition: transform 0.3s ease;
   }
 }
 
 .aside-show {
+  width: 260px !important;
   -webkit-box-shadow: var(--aside-right-border);
   box-shadow: var(--aside-right-border);
-  transition: width 0.3s ease, box-shadow 0.3s ease;
+  transition: width 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
   z-index: 101;
 
   @media (max-width: 1025px) {
@@ -110,7 +111,7 @@ function checkComposeAction() {
 }
 
 .aside {
-  width: auto;
+  transition: width 0.3s ease, transform 0.3s ease;
 }
 
 .layout {

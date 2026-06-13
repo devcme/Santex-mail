@@ -807,19 +807,11 @@ function jumpDetails(email) {
     }
   }
 
-  if (clickTimer) clearTimeout(clickTimer)
-  clickTimer = setTimeout(() => {
-    clickTimer = null
-    emit('jump', email)
-  }, 250)
+  emit('jump', email)
 }
 
 function handleDblClick(event, email) {
   event.preventDefault()
-  if (clickTimer) {
-    clearTimeout(clickTimer)
-    clickTimer = null
-  }
   emit('dblclick', email)
 }
 

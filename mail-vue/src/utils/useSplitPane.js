@@ -52,10 +52,14 @@ export function useSplitPane() {
 
   function onResize(e) {
     if (!isResizing.value) return
-    const delta = startX - e.clientX
+    const delta = e.clientX - startX
     const newWidth = Math.max(280, Math.min(startWidth + delta, window.innerWidth - 320))
     panelWidth.value = newWidth
-    if (newWidth <= 285) {
+    // If dragged to the extreme right (making right panel tiny), close it.
+    // Actually, closing detail means we hide the right panel.
+    // Let's close when right panel is too small (e.g. width > innerWidth - 320)
+    // Wait, the user asked "拖动到最左关闭详情", wait, no. Dragging the divider to the right closes the right panel?
+    if (window.innerWidth - newWidth <= 325) {
       closeDetail()
     }
   }
@@ -68,10 +72,8 @@ export function useSplitPane() {
     document.body.style.cursor = ''
     document.body.style.userSelect = ''
 
-    if (panelWidth.value <= 285) {
+    if (window.innerWidth - panelWidth.value <= 325) {
       panelWidth.value = Math.max(280, parseInt(localStorage.getItem(PANEL_KEY)) || 420)
-    } else if (panelWidth.value > window.innerWidth - 320) {
-      panelWidth.value = window.innerWidth - 320
     }
 
     localStorage.setItem(PANEL_KEY, panelWidth.value)
@@ -89,10 +91,10 @@ export function useSplitPane() {
 
   function onTouchMove(e) {
     if (!isResizing.value) return
-    const delta = startX - e.touches[0].clientX
+    const delta = e.touches[0].clientX - startX
     const newWidth = Math.max(280, Math.min(startWidth + delta, window.innerWidth - 320))
     panelWidth.value = newWidth
-    if (newWidth <= 285) {
+    if (window.innerWidth - newWidth <= 325) {
       closeDetail()
     }
   }

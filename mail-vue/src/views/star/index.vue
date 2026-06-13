@@ -105,6 +105,11 @@ onMounted(() => { emailStore.starScroll = scroll })
     flex: 1;
     min-width: 300px;
     overflow: hidden;
+    transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+
+  &.is-resizing .email-list-panel {
+    transition: none;
   }
 
   .resize-handle {
@@ -122,6 +127,11 @@ onMounted(() => { emailStore.starScroll = scroll })
     .resize-line { width: 1px; height: 100%; background: var(--el-border-color); transition: all 0.15s ease; }
   }
 
-  .email-detail-panel { flex: 1; min-width: 280px; overflow: hidden; background: var(--el-bg-color); }
+  .email-detail-panel { flex: 1; min-width: 280px; overflow: hidden; background: var(--el-bg-color); animation: slideInRight 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 </style>

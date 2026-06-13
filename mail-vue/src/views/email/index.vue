@@ -224,8 +224,12 @@ function getEmailList(emailId, size) {
 
   .email-list-panel {
     flex: 1;
-    min-width: 300px;
-    overflow: hidden;
+    min-width: 280px;
+    height: 100%;
+    transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+
+  &.is-resizing .email-list-panel {
     transition: none;
   }
 
@@ -267,6 +271,18 @@ function getEmailList(emailId, size) {
     min-width: 280px;
     overflow: hidden;
     background: var(--el-bg-color);
+    animation: slideInRight 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 

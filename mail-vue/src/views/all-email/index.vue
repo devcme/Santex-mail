@@ -263,6 +263,11 @@ async function latest() {
     flex: 1;
     min-width: 300px;
     overflow: hidden;
+    transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+
+  &.is-resizing .email-list-panel {
+    transition: none;
   }
 
   .resize-handle {
@@ -280,7 +285,7 @@ async function latest() {
     .resize-line { width: 1px; height: 100%; background: var(--el-border-color); transition: all 0.15s ease; }
   }
 
-  .email-detail-panel { flex: 1; min-width: 280px; overflow: hidden; background: var(--el-bg-color); }
+  .email-detail-panel { flex: 1; min-width: 280px; overflow: hidden; background: var(--el-bg-color); animation: slideInRight 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
 
   .search-input { width: 100%; max-width: 280px; height: 28px;
     .setting-icon { position: relative; top: 3px; }
@@ -302,5 +307,10 @@ async function latest() {
     @media (max-width: 456px) { position: absolute; top: 43px; left: 294px; }
     @media (max-width: 419px) { position: absolute; top: 43px; left: 282px; }
   }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 </style>
