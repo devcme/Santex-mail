@@ -1,5 +1,5 @@
 <template>
-  <el-scrollbar class="scroll" @mouseenter="onHoverEnter" @mouseleave="onHoverLeave">
+  <el-scrollbar class="scroll" ref="scrollRef">
     <div>
       <div class="compose-btn" :class="{ 'compose-collapsed': !uiStore.asideShow }" @click="openCompose" @dblclick.stop="openComposeNewWindow">
         <Icon icon="material-symbols:edit-outline-sharp" width="22" height="22" />
@@ -32,7 +32,7 @@ import { useEmailStore } from "@/store/email.js";
 import { useUserStore } from "@/store/user.js";
 import { useAccountStore } from "@/store/account.js";
 import { useI18n } from "vue-i18n";
-import { computed } from "vue";
+import { computed, ref, onMounted, onBeforeUnmount } from "vue";
 import { hasPerm } from "@/perm/perm.js";
 
 const settingStore = useSettingStore();
@@ -42,20 +42,38 @@ const userStore = useUserStore();
 const accountStore = useAccountStore();
 const route = useRoute();
 const { t } = useI18n();
-
+const scrollRef = ref(null)
 let hoverActive = false
-const onHoverEnter = () => {
-  if (!uiStore.asideShow) {
+
+const handleDocMouseMove = (e) => {
+  if (isMobile()) return
+  const el = scrollRef.value?.$el || scrollRef.value
+  if (!el) return
+  const rect = el.getBoundingClientRect()
+  const inAside = e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom
+  if (inAside && !uiStore.asideShow) {
     hoverActive = true
     uiStore.asideShow = true
-  }
-}
-const onHoverLeave = () => {
-  if (hoverActive) {
+  } else if (!inAside && hoverActive) {
     hoverActive = false
     uiStore.asideShow = false
   }
 }
+
+function isMobile() {
+  return window.innerWidth < 1025
+}
+
+onMounted(() => {
+  document.addEventListener('mousemove', handleDocMouseMove)
+})
+onBeforeUnmount(() => {
+  document.removeEventListener('mousemove', handleDocMouseMove)
+  if (hoverActive) {
+    hoverActive = false
+    uiStore.asideShow = false
+  }
+})
 
 let composeTimer = null
 

@@ -219,10 +219,17 @@ async function saveDraftLocal() {
   if (editor.value && editor.value.getContent) {
     form.content = editor.value.getContent()
   }
+  // send draft data to opener to save
+  if (window.opener && !window.opener.closed) {
+    const draftData = JSON.parse(JSON.stringify(form))
+    draftData.createTime = dayjs().utc().format('YYYY-MM-DD HH:mm:ss')
+    window.opener.postMessage({ type: 'save-draft', draft: draftData }, window.location.origin)
+    setTimeout(() => window.close(), 100)
+    return
+  }
+  // fallback: save directly to IndexedDB
   try {
-    if (form.draftId) {
-      draftStore.setDraft = { ...form }
-    } else {
+    if (!form.draftId && db.value?.draft) {
       const formData = { ...form }
       delete formData.draftId
       delete formData.attachments
@@ -232,9 +239,6 @@ async function saveDraftLocal() {
         db.value.att.add({ draftId, attachments: form.attachments })
       }
       draftStore.refreshList++
-    }
-    if (window.opener && !window.opener.closed) {
-      window.opener.postMessage({ type: 'draft-saved' }, window.location.origin)
     }
   } catch (e) {
     console.error('Failed to save draft:', e)
@@ -398,6 +402,10 @@ function addRecipientRecord() {
   div {
     display: flex;
     align-items: center;
+  }
+
+  .header-actions {
+    gap: 12px;
   }
 }
 

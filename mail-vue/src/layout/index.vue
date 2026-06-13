@@ -31,8 +31,12 @@ import {useUiStore} from "@/store/ui.js";
 import { ElNotification } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import writer from '@/layout/write/index.vue'
+import db from '@/db/db.js'
+import { userDraftStore } from '@/store/draft.js'
+import { h } from 'vue'
 
 const uiStore = useUiStore();
+const draftStore = userDraftStore()
 const writerRef = ref({})
 const isMobile = ref(window.innerWidth < 1025)
 const handleResize = () => {
@@ -58,12 +62,32 @@ function handleMessage(event) {
   if (event.origin !== window.location.origin) return
   if (event.data.type === 'compose-action') {
     checkComposeAction()
-  } else if (event.data.type === 'draft-saved') {
+  } else if (event.data.type === 'save-draft' && event.data.draft) {
+    saveDraftFromStandalone(event.data.draft)
+  }
+}
+
+async function saveDraftFromStandalone(draftData) {
+  try {
+    if (draftData.draftId) {
+      draftStore.setDraft = { ...draftData }
+    } else {
+      const fd = { ...draftData }
+      delete fd.draftId
+      delete fd.attachments
+      const draftId = await db.value.draft.add({ ...fd })
+      if (draftData.attachments?.length) {
+        db.value.att.add({ draftId, attachments: draftData.attachments })
+      }
+      draftStore.refreshList++
+    }
     ElNotification({
       title: t('saveSuccessMsg'),
       message: t('saveSuccessMsg'),
       position: 'bottom-right'
     })
+  } catch (e) {
+    console.error('Failed to save draft:', e)
   }
 }
 
