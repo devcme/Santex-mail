@@ -71,6 +71,8 @@ import { useI18n } from "vue-i18n";
 import sendPercent from "@/components/send-percent/index.vue"
 import { h } from "vue";
 import dayjs from "dayjs";
+import db from "@/db/db.js"
+import { userDraftStore } from "@/store/draft.js"
 
 const { t } = useI18n()
 const writerStore = useWriterStore();
@@ -78,6 +80,7 @@ const settingStore = useSettingStore()
 const emailStore = useEmailStore();
 const accountStore = useAccountStore()
 const userStore = useUserStore();
+const draftStore = userDraftStore()
 const editor = ref({})
 const defValue = ref('')
 let percentMessage = null
@@ -212,14 +215,30 @@ const handleKeyDown = (event) => {
   }
 }
 
-function saveDraftLocal() {
+async function saveDraftLocal() {
   if (editor.value && editor.value.getContent) {
     form.content = editor.value.getContent()
   }
-  localStorage.setItem('compose-data', JSON.stringify({
-    composeMode: form.sendType || 'new',
-    email: JSON.parse(JSON.stringify(form))
-  }))
+  try {
+    if (form.draftId) {
+      draftStore.setDraft = { ...form }
+    } else {
+      const formData = { ...form }
+      delete formData.draftId
+      delete formData.attachments
+      formData.createTime = dayjs().utc().format('YYYY-MM-DD HH:mm:ss')
+      const draftId = await db.value.draft.add({ ...formData })
+      if (form.attachments?.length) {
+        db.value.att.add({ draftId, attachments: form.attachments })
+      }
+      draftStore.refreshList++
+    }
+    if (window.opener && !window.opener.closed) {
+      window.opener.postMessage({ type: 'draft-saved' }, window.location.origin)
+    }
+  } catch (e) {
+    console.error('Failed to save draft:', e)
+  }
   window.close()
 }
 
@@ -230,7 +249,7 @@ function confirmDiscardLocal() {
     type: 'warning'
   }).then(() => {
     window.close()
-  })
+  }).catch(() => {})
 }
 
 function formatImage(content) {

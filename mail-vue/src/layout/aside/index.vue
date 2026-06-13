@@ -12,14 +12,10 @@
           </div>
           <div v-else
                class="menu-item" :class="{ 'menu-active': route.meta.name === item.index }"
-               @click="router.push({name: item.index})">
-            <el-tooltip v-if="!uiStore.asideShow" :content="item.label" placement="right" :show-after="300">
-              <div class="menu-icon"><Icon :icon="item.icon" :width="item.iconSize || '20'" :height="item.iconSize || '20'" /></div>
-            </el-tooltip>
-            <template v-else>
-              <div class="menu-icon"><Icon :icon="item.icon" :width="item.iconSize || '20'" :height="item.iconSize || '20'" /></div>
-              <span class="menu-text">{{ item.label }}</span>
-            </template>
+               @click="router.push({name: item.index})"
+               :title="!uiStore.asideShow ? item.label : ''">
+            <div class="menu-icon"><Icon :icon="item.icon" :width="item.iconSize || '20'" :height="item.iconSize || '20'" /></div>
+            <span class="menu-text" v-show="uiStore.asideShow">{{ item.label }}</span>
           </div>
         </template>
       </div>
@@ -48,13 +44,27 @@ const accountStore = useAccountStore();
 const route = useRoute();
 const { t } = useI18n();
 
+let composeTimer = null
+
 function openCompose() {
-  emailStore.contentData.composeMode = 'new'
-  emailStore.contentData.email = {}
-  uiStore.writerRef.open()
+  if (composeTimer) {
+    clearTimeout(composeTimer)
+    composeTimer = null
+    return
+  }
+  composeTimer = setTimeout(() => {
+    composeTimer = null
+    emailStore.contentData.composeMode = 'new'
+    emailStore.contentData.email = {}
+    uiStore.writerRef.open()
+  }, 200)
 }
 
 function openComposeNewWindow() {
+  if (composeTimer) {
+    clearTimeout(composeTimer)
+    composeTimer = null
+  }
   emailStore.contentData.composeMode = 'new'
   emailStore.contentData.email = {}
   const account = accountStore.currentAccount

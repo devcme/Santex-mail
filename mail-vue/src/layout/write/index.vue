@@ -73,9 +73,9 @@
             </div>
           </div>
           <div>
-            <el-button type="primary" @click="handleSendClick" @dblclick.stop="handleSendDblclick" v-if="form.sendType === 'reply'">{{ $t('reply') }}</el-button>
-            <el-button type="primary" @click="handleSendClick" @dblclick.stop="handleSendDblclick" v-else-if="form.sendType === 'forward'">{{ $t('forward') }}</el-button>
-            <el-button type="primary" @click="handleSendClick" @dblclick.stop="handleSendDblclick" v-else>{{ $t('send') }}</el-button>
+            <el-button type="primary" @click="sendEmail" @dblclick.stop="openComposeNewWindow" v-if="form.sendType === 'reply'">{{ $t('reply') }}</el-button>
+            <el-button type="primary" @click="sendEmail" @dblclick.stop="openComposeNewWindow" v-else-if="form.sendType === 'forward'">{{ $t('forward') }}</el-button>
+            <el-button type="primary" @click="sendEmail" @dblclick.stop="openComposeNewWindow" v-else>{{ $t('send') }}</el-button>
           </div>
         </div>
       </div>
@@ -599,25 +599,17 @@ function confirmDiscard() {
   })
 }
 
-let sendBtnTimer = null
-
-function handleSendClick() {
-  if (sendBtnTimer) {
-    clearTimeout(sendBtnTimer)
-    sendBtnTimer = null
+function close() {
+  if (selectStatus) openSelect()
+  if (!hasContent.value) {
+    show.value = false
+    resetForm()
     return
   }
-  sendBtnTimer = setTimeout(() => {
-    sendBtnTimer = null
-    sendEmail()
-  }, 200)
+  saveDraft()
 }
 
-function handleSendDblclick() {
-  if (sendBtnTimer) {
-    clearTimeout(sendBtnTimer)
-    sendBtnTimer = null
-  }
+function openComposeNewWindow() {
   if (editor.value && editor.value.getContent) {
     form.content = editor.value.getContent()
   }
@@ -632,16 +624,6 @@ function handleSendDblclick() {
   const url = `${window.location.origin}/compose`
   const win = window.open(url, '_blank', 'width=900,height=750')
   if (win) win.focus()
-}
-
-function close() {
-  if (selectStatus) openSelect()
-  if (!hasContent.value) {
-    show.value = false
-    resetForm()
-    return
-  }
-  saveDraft()
 }
 
 </script>

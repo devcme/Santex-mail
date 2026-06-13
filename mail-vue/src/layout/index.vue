@@ -30,12 +30,15 @@ import Header from '@/layout/header/index.vue'
 import Main from '@/layout/main/index.vue'
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import {useUiStore} from "@/store/ui.js";
+import { ElNotification } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 import writer from '@/layout/write/index.vue'
 
 const uiStore = useUiStore();
 const writerRef = ref({})
 const isMobile = ref(window.innerWidth < 1025)
 let wasCollapsed = false
+const { t } = useI18n()
 const handleResize = () => {
   isMobile.value = window.innerWidth < 1025
   uiStore.asideShow = window.innerWidth > 1024;
@@ -73,6 +76,12 @@ function handleMessage(event) {
   if (event.origin !== window.location.origin) return
   if (event.data.type === 'compose-action') {
     checkComposeAction()
+  } else if (event.data.type === 'draft-saved') {
+    ElNotification({
+      title: t('saveSuccessMsg'),
+      message: t('saveSuccessMsg'),
+      position: 'bottom-right'
+    })
   }
 }
 
