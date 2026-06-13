@@ -2,7 +2,8 @@
   <el-container class="layout">
     <el-aside
         class="aside"
-        :class="uiStore.asideShow ? 'aside-show' : 'aside-narrow'">
+        :class="uiStore.asideShow ? 'aside-show' : 'aside-narrow'"
+        :width="uiStore.asideShow ? '200px' : '64px'">
       <Aside />
     </el-aside>
     <div
@@ -93,7 +94,7 @@ function checkComposeAction() {
 }
 
 .aside-show {
-  width: 260px !important;
+  width: 200px !important;
   -webkit-box-shadow: var(--aside-right-border);
   box-shadow: var(--aside-right-border);
   transition: width 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;

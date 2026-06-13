@@ -807,11 +807,23 @@ function jumpDetails(email) {
     }
   }
 
-  emit('jump', email)
+  if (clickTimer) {
+    clearTimeout(clickTimer)
+    clickTimer = null
+    return
+  }
+  clickTimer = setTimeout(() => {
+    clickTimer = null
+    emit('jump', email)
+  }, 200)
 }
 
 function handleDblClick(event, email) {
   event.preventDefault()
+  if (clickTimer) {
+    clearTimeout(clickTimer)
+    clickTimer = null
+  }
   emit('dblclick', email)
 }
 
@@ -1080,11 +1092,12 @@ function loadData() {
   .title {
     flex: 1;
     display: grid;
-    grid-template-columns: 240px 1fr;
+    grid-template-columns: 150px 1fr;
+    min-width: 0;
     @media (max-width: 1366px) {
       padding-right: 15px;
     }
-    @media (max-width: 1366px) {
+    @media (max-width: 600px) {
       grid-template-columns: 1fr;
       gap: 4px;
     }
@@ -1093,6 +1106,7 @@ function loadData() {
       color: var(--el-text-color-primary);
       display: grid;
       grid-template-columns: auto 1fr auto;
+      min-width: 0;
 
       .email-status {
         display: flex;
@@ -1108,6 +1122,7 @@ function loadData() {
         display: grid;
         gap: 5px;
         grid-template-columns: auto 1fr;
+        min-width: 0;
 
         > span:last-child {
           display: flex;
