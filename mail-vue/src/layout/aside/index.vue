@@ -1,5 +1,5 @@
 <template>
-  <el-scrollbar class="scroll">
+  <el-scrollbar class="scroll" @mouseenter="onHoverEnter" @mouseleave="onHoverLeave">
     <div>
       <div class="compose-btn" :class="{ 'compose-collapsed': !uiStore.asideShow }" @click="openCompose" @dblclick.stop="openComposeNewWindow">
         <Icon icon="material-symbols:edit-outline-sharp" width="22" height="22" />
@@ -12,8 +12,7 @@
           </div>
           <div v-else
                class="menu-item" :class="{ 'menu-active': route.meta.name === item.index }"
-               @click="router.push({name: item.index})"
-               :title="!uiStore.asideShow ? item.label : ''">
+               @click="router.push({name: item.index})">
             <div class="menu-icon"><Icon :icon="item.icon" :width="item.iconSize || '20'" :height="item.iconSize || '20'" /></div>
             <span class="menu-text" v-show="uiStore.asideShow">{{ item.label }}</span>
           </div>
@@ -43,6 +42,20 @@ const userStore = useUserStore();
 const accountStore = useAccountStore();
 const route = useRoute();
 const { t } = useI18n();
+
+let hoverActive = false
+const onHoverEnter = () => {
+  if (!uiStore.asideShow) {
+    hoverActive = true
+    uiStore.asideShow = true
+  }
+}
+const onHoverLeave = () => {
+  if (hoverActive) {
+    hoverActive = false
+    uiStore.asideShow = false
+  }
+}
 
 let composeTimer = null
 

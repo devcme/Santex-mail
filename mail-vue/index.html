@@ -10,15 +10,21 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   <script>
-    const uiStoreStr =  localStorage.getItem('ui')
+    const uiStoreStr = localStorage.getItem('ui')
+    let darkMode = false
     if (uiStoreStr) {
-      const uiStore =  JSON.parse(uiStoreStr)
-      const root = document.documentElement
-      root.setAttribute('class', uiStore.dark ? 'dark' : '');
-      const metaTag = document.getElementById('theme-color-meta');
-      const isMobile =  !window.matchMedia("(pointer: fine) and (hover: hover)").matches;
-      metaTag.setAttribute('content', uiStore.dark ? (isMobile ? '#141414' : '#000000') : (isMobile ? '#FFFFFF' : '#F1F1F1'));
+      try {
+        const uiStore = JSON.parse(uiStoreStr)
+        darkMode = uiStore.dark
+      } catch (e) {}
+    } else {
+      darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
     }
+    const root = document.documentElement
+    root.setAttribute('class', darkMode ? 'dark' : '');
+    const metaTag = document.getElementById('theme-color-meta');
+    const isMobile = !window.matchMedia("(pointer: fine) and (hover: hover)").matches;
+    metaTag.setAttribute('content', darkMode ? (isMobile ? '#141414' : '#000000') : (isMobile ? '#FFFFFF' : '#F1F1F1'));
   </script>
 </head>
 <style>

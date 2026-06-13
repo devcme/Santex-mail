@@ -3,14 +3,12 @@
     <el-aside
         class="aside"
         :class="uiStore.asideShow ? 'aside-show' : 'aside-narrow'"
-        :width="uiStore.asideShow ? '176px' : '64px'"
-        @mouseenter="onAsideEnter"
-        @mouseleave="onAsideLeave">
+        :width="uiStore.asideShow ? '176px' : '64px'">
       <Aside />
     </el-aside>
     <div
         :class="(uiStore.asideShow && isMobile)? 'overlay-show':'overlay-hide'"
-        @click="uiStore.asideShow = false; wasCollapsed = false"
+        @click="uiStore.asideShow = false"
     ></div>
     <el-container class="main-container">
       <el-main>
@@ -37,25 +35,9 @@ import writer from '@/layout/write/index.vue'
 const uiStore = useUiStore();
 const writerRef = ref({})
 const isMobile = ref(window.innerWidth < 1025)
-let wasCollapsed = false
-const { t } = useI18n()
 const handleResize = () => {
   isMobile.value = window.innerWidth < 1025
   uiStore.asideShow = window.innerWidth > 1024;
-}
-const onAsideEnter = () => {
-  if (!uiStore.asideShow && !isMobile.value) {
-    wasCollapsed = true
-    uiStore.asideShow = true
-  } else {
-    wasCollapsed = false
-  }
-}
-const onAsideLeave = () => {
-  if (wasCollapsed) {
-    wasCollapsed = false
-    uiStore.asideShow = false
-  }
 }
 
 onMounted(() => {
