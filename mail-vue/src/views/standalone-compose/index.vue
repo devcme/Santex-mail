@@ -99,23 +99,45 @@ const form = reactive({
 })
 
 onMounted(() => {
-  if (!accountStore.currentAccount?.email) {
-    form.sendEmail = userStore.user.email;
-    form.accountId = userStore.user.account.accountId;
-    form.name = userStore.user.name;
-  } else {
-    form.sendEmail = accountStore.currentAccount.email;
-    form.accountId = accountStore.currentAccount.accountId;
-    form.name = accountStore.currentAccount.name;
-  }
-
   const composeDataRaw = localStorage.getItem('compose-data')
+  let email = null
+  let mode = ''
+
   if (composeDataRaw) {
     try {
       const composeData = JSON.parse(composeDataRaw)
-      const mode = composeData.composeMode
-      const email = composeData.email
+      mode = composeData.composeMode
+      email = composeData.email
 
+      // 预加载账户信息
+      if (email && email._sendEmail) {
+        form.sendEmail = email._sendEmail
+        form.accountId = email._accountId || -1
+        form.name = email._name || ''
+        delete email._sendEmail
+        delete email._accountId
+        delete email._name
+      }
+    } catch (e) {
+      console.error('Failed to parse compose data:', e)
+    }
+  }
+
+  // 后备: 从store读取
+  if (!form.sendEmail) {
+    if (!accountStore.currentAccount?.email) {
+      form.sendEmail = userStore.user.email;
+      form.accountId = userStore.user.account.accountId;
+      form.name = userStore.user.name;
+    } else {
+      form.sendEmail = accountStore.currentAccount.email;
+      form.accountId = accountStore.currentAccount.accountId;
+      form.name = accountStore.currentAccount.name;
+    }
+  }
+
+  if (email) {
+    try {
       if (mode === 'reply' && email) {
         form.receiveEmail.push(email.sendEmail)
         form.subject = (email.subject && (
@@ -146,18 +168,21 @@ onMounted(() => {
             ${formatImage(email.content) || `<pre style="font-family: inherit;word-break: break-word;white-space: pre-wrap;margin: 0">${email.text}</pre>`}
           `
         }, 200)
-      } else if (mode === 'new' && email) {
-        if (email.sendEmail) {
-          form.receiveEmail = [email.sendEmail]
-        }
+      } else if (mode === 'new' || mode === 'draft') {
+        if (email.receiveEmail) form.receiveEmail = email.receiveEmail
+        if (email.sendEmail) form.receiveEmail = [email.sendEmail]
         form.subject = email.subject || ''
         form.emailId = email.emailId || 0
-        form.sendType = ''
+        form.sendType = email.sendType || ''
+        if (email.content) form.content = email.content
+        if (email.text) form.text = email.text
+        if (email.attachments) form.attachments = email.attachments
+        if (email.draftId) form.draftId = email.draftId
       }
 
       editor.value.focus?.()
     } catch (e) {
-      console.error('Failed to parse compose data:', e)
+      console.error('Failed to init compose content:', e)
     }
   }
 

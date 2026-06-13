@@ -30,6 +30,8 @@ import {starAdd, starCancel} from "@/request/star.js";
 import {defineOptions, ref, watch, toRaw} from "vue";
 import {useUiStore} from "@/store/ui.js";
 import {userDraftStore} from "@/store/draft.js";
+import {useAccountStore} from "@/store/account.js";
+import {useUserStore} from "@/store/user.js";
 import db from "@/db/db.js"
 
 defineOptions({
@@ -37,6 +39,8 @@ defineOptions({
 })
 
 const draftStore = userDraftStore();
+const accountStore = useAccountStore();
+const userStore = useUserStore();
 const uiStore = useUiStore();
 const scroll = ref({})
 
@@ -92,9 +96,15 @@ async function jumpContent(email) {
 async function openDraftWindow(email) {
   const att = await db.value.att.get(email.draftId)
   email.attachments = att.attachments
+  const account = accountStore.currentAccount
+  const user = userStore.user
+  const preload = JSON.parse(JSON.stringify(email))
+  preload._sendEmail = account?.email || user?.email || ''
+  preload._accountId = account?.accountId || user?.account?.accountId || -1
+  preload._name = account?.name || user?.name || ''
   localStorage.setItem('compose-data', JSON.stringify({
     composeMode: 'draft',
-    email: JSON.parse(JSON.stringify(email))
+    email: preload
   }))
   const url = `${window.location.origin}/compose`
   const win = window.open(url, '_blank', 'width=900,height=750')

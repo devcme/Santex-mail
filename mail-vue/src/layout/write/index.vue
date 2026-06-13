@@ -73,9 +73,9 @@
             </div>
           </div>
           <div>
-            <el-button type="primary" @click="sendEmail" @dblclick.stop="openInNewWindow" v-if="form.sendType === 'reply'">{{ $t('reply') }}</el-button>
-            <el-button type="primary" @click="sendEmail" @dblclick.stop="openInNewWindow" v-else-if="form.sendType === 'forward'">{{ $t('forward') }}</el-button>
-            <el-button type="primary" @click="sendEmail" @dblclick.stop="openInNewWindow" v-else>{{ $t('send') }}</el-button>
+            <el-button type="primary" @click="handleSendClick" @dblclick.stop="handleSendDblclick" v-if="form.sendType === 'reply'">{{ $t('reply') }}</el-button>
+            <el-button type="primary" @click="handleSendClick" @dblclick.stop="handleSendDblclick" v-else-if="form.sendType === 'forward'">{{ $t('forward') }}</el-button>
+            <el-button type="primary" @click="handleSendClick" @dblclick.stop="handleSendDblclick" v-else>{{ $t('send') }}</el-button>
           </div>
         </div>
       </div>
@@ -599,6 +599,41 @@ function confirmDiscard() {
   })
 }
 
+let sendBtnTimer = null
+
+function handleSendClick() {
+  if (sendBtnTimer) {
+    clearTimeout(sendBtnTimer)
+    sendBtnTimer = null
+    return
+  }
+  sendBtnTimer = setTimeout(() => {
+    sendBtnTimer = null
+    sendEmail()
+  }, 200)
+}
+
+function handleSendDblclick() {
+  if (sendBtnTimer) {
+    clearTimeout(sendBtnTimer)
+    sendBtnTimer = null
+  }
+  if (editor.value && editor.value.getContent) {
+    form.content = editor.value.getContent()
+  }
+  const preload = JSON.parse(JSON.stringify(form))
+  preload._accountId = form.accountId
+  preload._name = form.name
+  preload._sendEmail = form.sendEmail
+  localStorage.setItem('compose-data', JSON.stringify({
+    composeMode: form.sendType || 'new',
+    email: preload
+  }))
+  const url = `${window.location.origin}/compose`
+  const win = window.open(url, '_blank', 'width=900,height=750')
+  if (win) win.focus()
+}
+
 function close() {
   if (selectStatus) openSelect()
   if (!hasContent.value) {
@@ -607,19 +642,6 @@ function close() {
     return
   }
   saveDraft()
-}
-
-function openInNewWindow() {
-  if (editor.value && editor.value.getContent) {
-    form.content = editor.value.getContent()
-  }
-  localStorage.setItem('compose-action', JSON.stringify({
-    type: form.sendType || 'new',
-    email: JSON.parse(JSON.stringify(form))
-  }))
-  const url = `${window.location.origin}/compose`
-  const win = window.open(url, '_blank', 'width=900,height=750')
-  if (win) win.focus()
 }
 
 </script>

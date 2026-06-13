@@ -3,12 +3,12 @@
     <div>
       <div class="compose-btn" :class="{ 'compose-collapsed': !uiStore.asideShow }" @click="openCompose" @dblclick.stop="openComposeNewWindow">
         <Icon icon="material-symbols:edit-outline-sharp" width="22" height="22" />
-        <span class="compose-text" v-show="uiStore.asideShow">{{ settingStore.settings.title }}</span>
+        <span class="compose-text">{{ settingStore.settings.title }}</span>
       </div>
       <div class="menu-list">
         <template v-for="item in menuItems" :key="item.index">
           <div v-if="item.index === '_divider_'" class="menu-divider">
-            <span class="divider-text" v-show="uiStore.asideShow">{{ t('manage') }}</span>
+            <span class="divider-text">{{ t('manage') }}</span>
           </div>
           <div v-else
                class="menu-item" :class="{ 'menu-active': route.meta.name === item.index }"
@@ -34,6 +34,8 @@ import { Icon } from "@iconify/vue";
 import { useSettingStore } from "@/store/setting.js";
 import { useUiStore } from "@/store/ui.js";
 import { useEmailStore } from "@/store/email.js";
+import { useUserStore } from "@/store/user.js";
+import { useAccountStore } from "@/store/account.js";
 import { useI18n } from "vue-i18n";
 import { computed } from "vue";
 import { hasPerm } from "@/perm/perm.js";
@@ -41,6 +43,8 @@ import { hasPerm } from "@/perm/perm.js";
 const settingStore = useSettingStore();
 const uiStore = useUiStore();
 const emailStore = useEmailStore();
+const userStore = useUserStore();
+const accountStore = useAccountStore();
 const route = useRoute();
 const { t } = useI18n();
 
@@ -53,9 +57,15 @@ function openCompose() {
 function openComposeNewWindow() {
   emailStore.contentData.composeMode = 'new'
   emailStore.contentData.email = {}
+  const account = accountStore.currentAccount
+  const user = userStore.user
   localStorage.setItem('compose-data', JSON.stringify({
     composeMode: 'new',
-    email: {}
+    email: {
+      _sendEmail: account?.email || user?.email || '',
+      _accountId: account?.accountId || user?.account?.accountId || -1,
+      _name: account?.name || user?.name || ''
+    }
   }))
   const url = `${window.location.origin}/compose`
   const win = window.open(url, '_blank', 'width=900,height=750')
@@ -110,7 +120,9 @@ const menuItems = computed(() => {
   .compose-text {
     overflow: hidden;
     text-overflow: ellipsis;
-    transition: opacity 0.2s ease;
+    transition: opacity 0.25s ease, max-width 0.25s ease;
+    max-width: 200px;
+    opacity: 1;
   }
 }
 
@@ -122,7 +134,8 @@ const menuItems = computed(() => {
   border-radius: 10px;
 
   .compose-text {
-    display: none;
+    opacity: 0;
+    max-width: 0;
   }
 }
 
@@ -173,10 +186,26 @@ const menuItems = computed(() => {
   margin: 8px 12px;
   padding-top: 8px;
   border-top: 1px solid rgba(255, 255, 255, 0.15);
+  transition: padding-top 0.25s ease, margin 0.25s ease;
 
   .divider-text {
     font-size: 12px;
     color: rgba(255, 255, 255, 0.6);
+    transition: opacity 0.25s ease, max-height 0.25s ease;
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    display: block;
+  }
+}
+
+.aside-show .menu-divider {
+  padding-top: 8px;
+  margin: 8px 12px;
+  
+  .divider-text {
+    max-height: 20px;
+    opacity: 1;
   }
 }
 
