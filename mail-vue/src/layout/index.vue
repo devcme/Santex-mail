@@ -3,7 +3,7 @@
     <el-aside
         class="aside"
         :class="uiStore.asideShow ? 'aside-show' : 'aside-narrow'"
-        :width="uiStore.asideShow ? '200px' : '64px'">
+        :width="uiStore.asideShow ? '176px' : '64px'">
       <Aside />
     </el-aside>
     <div
@@ -79,7 +79,7 @@ function checkComposeAction() {
 <style lang="scss" scoped>
 .aside-narrow {
   width: 64px !important;
-  overflow: hidden;
+  overflow: visible;
   transition: width 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
 
   @media (max-width: 1025px) {
@@ -94,7 +94,7 @@ function checkComposeAction() {
 }
 
 .aside-show {
-  width: 200px !important;
+  width: 176px !important;
   -webkit-box-shadow: var(--aside-right-border);
   box-shadow: var(--aside-right-border);
   transition: width 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;

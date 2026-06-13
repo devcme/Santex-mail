@@ -124,12 +124,12 @@ function handleMenuSelect(index) {
 
 <style lang="scss" scoped>
 .title {
-  margin: 15px auto;
+  margin: 15px 20px;
   height: 42px;
   border-radius: 6px;
   display: flex;
   position: relative;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: bold;
   align-items: center;
   justify-content: center;
@@ -138,13 +138,13 @@ function handleMenuSelect(index) {
   cursor: pointer;
   background: linear-gradient(135deg, #1890ff, #3a80dd);
   transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), border-radius 0.3s ease, margin 0.3s ease, padding 0.3s ease;
-  width: 130px;
+  width: 120px;
   padding: 0 8px;
   > div {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    max-width: calc(130px - 16px - 28px);
+    max-width: calc(120px - 16px - 28px);
   }
 }
 
@@ -156,6 +156,9 @@ function handleMenuSelect(index) {
   padding: 0;
   max-width: 40px;
   justify-content: center;
+  > div {
+    display: none;
+  }
 }
 
 .fade-text-enter-active, .fade-text-leave-active {
@@ -180,7 +183,7 @@ function handleMenuSelect(index) {
 }
 
 .el-menu-item {
-  margin: 5px 10px;
+  margin: 4px 10px;
   border-radius: 6px;
   height: 38px;
   display: flex;
@@ -188,15 +191,15 @@ function handleMenuSelect(index) {
 }
 
 :deep(.el-menu--collapse) .el-menu-item {
-  margin: 5px auto;
-  width: 44px;
+  margin: 4px 0 !important;
   padding: 0 !important;
+  width: 100%;
   justify-content: center;
 }
 
 .el-menu:not(.el-menu--collapse) .el-menu-item {
   padding: 0 10px !important;
-  gap: 10px;
+  gap: 8px;
 }
 
 :deep(.el-menu-item .el-menu-tooltip__trigger) {
