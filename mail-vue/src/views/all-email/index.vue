@@ -1,6 +1,6 @@
 <template>
   <div class="email-split" :class="{ 'has-detail': selectedEmail, 'is-resizing': isResizing }">
-    <div class="email-list-panel" :style="selectedEmail ? { width: panelWidth + 'px', flexShrink: 0 } : {}">
+    <div class="email-list-panel" :style="selectedEmail ? { width: panelWidth + 'px', flex: 'none' } : {}">
       <emailScroll ref="sysEmailScroll"
                   :get-emailList="getEmailList"
                   :email-delete="allEmailDelete"

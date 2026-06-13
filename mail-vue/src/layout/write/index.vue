@@ -1,4 +1,5 @@
 <template>
+  <transition name="fade-pop">
   <div class="send" v-show="show">
     <div class="write-box">
       <div class="title">
@@ -10,8 +11,18 @@
           <span class="sender-name">{{ form.name }}</span>
           <span class="send-email"><{{ form.sendEmail }}></span>
         </div>
-        <div @click="close" style="cursor: pointer;">
-          <Icon icon="material-symbols-light:close-rounded" width="22" height="22"/>
+        <div class="header-actions" style="display: flex; gap: 12px; align-items: center; color: var(--el-text-color-regular);">
+          <template v-if="isChange">
+            <el-tooltip :content="$t('save')" placement="bottom">
+              <Icon icon="mdi:minus" width="24" height="24" @click="saveDraft" style="cursor: pointer;" />
+            </el-tooltip>
+            <el-tooltip :content="$t('delete')" placement="bottom">
+              <Icon icon="fluent:delete-24-regular" width="22" height="22" @click="confirmDelete" style="cursor: pointer;" />
+            </el-tooltip>
+          </template>
+          <template v-else>
+            <Icon icon="material-symbols-light:close-rounded" width="26" height="26" @click="close" style="cursor: pointer;"/>
+          </template>
         </div>
       </div>
       <div class="container">
@@ -91,6 +102,7 @@
       </div>
     </el-dialog>
   </div>
+  </transition>
 </template>
 <script setup>
 import tinyEditor from '@/components/tiny-editor/index.vue'
@@ -542,65 +554,74 @@ onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyDown);
 });
 
-function close() {
-
-  if (selectStatus) openSelect();
-
-  if (!form.content) {
-    form.content = editor.value.getContent();
+const isChange = computed(() => {
+  let currentContent = editor.value ? editor.value.getContent() : form.content;
+  if (!(currentContent || form.subject || form.receiveEmail.length > 0)) {
+    return false;
   }
-
-  if (form.draftId) {
-    draftStore.setDraft = {...toRaw(form)}
-    show.value = false
-    resetForm()
-    return;
-  }
-
-  if (!(form.content || form.subject || form.receiveEmail.length > 0)) {
-    show.value = false
-    resetForm()
-    return;
-  }
-
   if (backReply.sendType === 'reply' || backReply.sendType === 'forward') {
-    let subjectFlag = form.subject === backReply.subject
-    let contentFlag = editor.value.getContent() === backReply.content
-    let receiveFlag = form.receiveEmail.length === 1 && form.receiveEmail[0] === backReply.receiveEmail[0]
+    let subjectFlag = form.subject === backReply.subject;
+    let contentFlag = currentContent === backReply.content;
+    let receiveFlag = form.receiveEmail.length === 1 && form.receiveEmail[0] === backReply.receiveEmail[0];
     if (backReply.sendType === 'forward' && form.receiveEmail.length === 0) {
       receiveFlag = true;
     }
     if (subjectFlag && contentFlag && receiveFlag) {
-      resetForm();
-      close()
-      return;
+      return false;
     }
   }
+  return true;
+});
 
-  ElMessageBox.confirm(t('saveDraftConfirm'), {
+async function saveDraft() {
+  if (selectStatus) openSelect();
+  if (!form.content) {
+    form.content = editor.value.getContent();
+  }
+  if (form.draftId) {
+    draftStore.setDraft = {...toRaw(form)};
+    show.value = false;
+    resetForm();
+    ElNotification({
+      title: t('saveSuccessMsg'),
+      message: h('span', {style: 'color: teal'}, t('saveSuccessMsg')),
+      position: 'bottom-right'
+    });
+    return;
+  }
+  const formData = {...toRaw(form)};
+  delete formData.draftId;
+  delete formData.attachments;
+  formData.createTime = dayjs().utc().format('YYYY-MM-DD HH:mm:ss');
+  const draftId = await db.value.draft.add({...formData});
+  db.value.att.add({draftId, attachments: toRaw(form.attachments)});
+  draftStore.refreshList++;
+  show.value = false;
+  await nextTick(() => {
+    resetForm();
+  });
+  ElNotification({
+    title: t('saveSuccessMsg'),
+    message: h('span', {style: 'color: teal'}, t('saveSuccessMsg')),
+    position: 'bottom-right'
+  });
+}
+
+function confirmDelete() {
+  ElMessageBox.confirm(t('delEmailsConfirm'), {
     confirmButtonText: t('confirm'),
     cancelButtonText: t('cancel'),
-    type: 'warning',
-    distinguishCancelAndClose: true
-  }).then(async () => {
-    const formData = {...toRaw(form)};
-    delete formData.draftId
-    delete formData.attachments
-    formData.createTime = dayjs().utc().format('YYYY-MM-DD HH:mm:ss');
-    const draftId = await db.value.draft.add({...formData})
-    db.value.att.add({draftId, attachments: toRaw(form.attachments)})
-    draftStore.refreshList++
-    show.value = false
-    await nextTick(() => {
-      resetForm()
-    })
-  }).catch((action) => {
-    if (action === 'cancel') {
-      show.value = false
-      resetForm()
-    }
-  })
+    type: 'warning'
+  }).then(() => {
+    show.value = false;
+    resetForm();
+  });
+}
 
+function close() {
+  if (selectStatus) openSelect();
+  show.value = false;
+  resetForm();
 }
 
 </script>
@@ -617,6 +638,19 @@ function close() {
 }
 </style>
 <style scoped lang="scss">
+.fade-pop-enter-active, .fade-pop-leave-active {
+  transition: opacity 0.3s ease;
+  .write-box {
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+}
+.fade-pop-enter-from, .fade-pop-leave-to {
+  opacity: 0;
+  .write-box {
+    transform: translateY(30px) scale(0.95);
+  }
+}
+
 .send {
   position: fixed;
   top: 0;
@@ -626,6 +660,8 @@ function close() {
   display: flex;
   align-items: center;
   justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 2000;
 
   .write-box {
     background: var(--el-bg-color);

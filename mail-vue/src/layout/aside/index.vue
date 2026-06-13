@@ -7,31 +7,31 @@
           <div v-show="uiStore.asideShow">{{ settingStore.settings.title }}</div>
         </transition>
       </div>
-      <el-menu :collapse="!uiStore.asideShow" text-color="#fff" active-text-color="#fff" style="margin-top: 10px">
-        <el-menu-item @click="router.push({name: 'email'})" index="email"
+      <el-menu :collapse="!uiStore.asideShow" text-color="#fff" active-text-color="#fff" style="margin-top: 10px" @select="handleMenuSelect">
+        <el-menu-item index="email"
                       :class="route.meta.name === 'email' ? 'choose-item' : ''">
           <Icon icon="hugeicons:mailbox-01" width="20" height="20" />
-          <span class="menu-name">{{ $t('inbox') }}</span>
+          <template #title><span class="menu-name">{{ $t('inbox') }}</span></template>
         </el-menu-item>
-        <el-menu-item @click="router.push({name: 'send'})" index="send" v-perm="'email:send'"
+        <el-menu-item index="send" v-perm="'email:send'"
                       :class="route.meta.name === 'send' ? 'choose-item' : ''">
           <Icon icon="cil:send" width="20" height="20" />
-          <span class="menu-name">{{ $t('sent') }}</span>
+          <template #title><span class="menu-name">{{ $t('sent') }}</span></template>
         </el-menu-item>
-        <el-menu-item @click="router.push({name: 'draft'})" index="draft" v-perm="'email:send'"
+        <el-menu-item index="draft" v-perm="'email:send'"
                       :class="route.meta.name === 'draft' ? 'choose-item' : ''">
           <Icon icon="ep:document" width="19" height="19" />
-          <span class="menu-name">{{ $t('drafts') }}</span>
+          <template #title><span class="menu-name">{{ $t('drafts') }}</span></template>
         </el-menu-item>
-        <el-menu-item @click="router.push({name: 'star'})" index="star"
+        <el-menu-item index="star"
                       :class="route.meta.name === 'star' ? 'choose-item' : ''">
           <Icon icon="solar:star-line-duotone" width="20" height="20" />
-          <span class="menu-name">{{ $t('starred') }}</span>
+          <template #title><span class="menu-name">{{ $t('starred') }}</span></template>
         </el-menu-item>
-        <el-menu-item @click="router.push({name: 'setting'})" index="setting"
+        <el-menu-item index="setting"
                       :class="route.meta.name === 'setting' ? 'choose-item' : ''">
           <Icon icon="fluent:settings-48-regular" width="20" height="20" />
-          <span class="menu-name">{{ $t('settings') }}</span>
+          <template #title><span class="menu-name">{{ $t('settings') }}</span></template>
         </el-menu-item>
         <transition name="fade-text">
           <div class="manage-title" v-if="uiStore.asideShow" v-perm="['all-email:query','user:query','role:query','setting:query','analysis:query','reg-key:query']">
@@ -39,35 +39,35 @@
           </div>
           <div class="manage-divider" v-else v-perm="['all-email:query','user:query','role:query','setting:query','analysis:query','reg-key:query']"></div>
         </transition>
-        <el-menu-item @click="router.push({name: 'analysis'})" index="analysis" v-perm="'analysis:query'"
+        <el-menu-item index="analysis" v-perm="'analysis:query'"
                       :class="route.meta.name === 'analysis' ? 'choose-item' : ''">
           <Icon icon="fluent:data-pie-20-regular" width="24" height="24" />
-          <span class="menu-name">{{ $t('analytics') }}</span>
+          <template #title><span class="menu-name">{{ $t('analytics') }}</span></template>
         </el-menu-item>
-        <el-menu-item @click="router.push({name: 'user'})" index="setting" v-perm="'user:query'"
+        <el-menu-item index="user" v-perm="'user:query'"
                       :class="route.meta.name === 'user' ? 'choose-item' : ''">
           <Icon icon="si:user-alt-2-line" width="20" height="20" />
-          <span class="menu-name">{{ $t('allUsers') }}</span>
+          <template #title><span class="menu-name">{{ $t('allUsers') }}</span></template>
         </el-menu-item>
-        <el-menu-item @click="router.push({name: 'all-email'})" index="all-email" v-perm="'all-email:query'"
+        <el-menu-item index="all-email" v-perm="'all-email:query'"
                       :class="route.meta.name === 'all-email' ? 'choose-item' : ''">
           <Icon icon="fluent:mail-list-28-regular" width="22" height="22" />
-          <span class="menu-name">{{ $t('allMail') }}</span>
+          <template #title><span class="menu-name">{{ $t('allMail') }}</span></template>
         </el-menu-item>
-        <el-menu-item @click="router.push({name: 'role'})" index="setting" v-perm="'role:query'"
+        <el-menu-item index="role" v-perm="'role:query'"
                       :class="route.meta.name === 'role' ? 'choose-item' : ''">
           <Icon icon="fluent:lock-closed-16-regular" width="22" height="22" />
-          <span class="menu-name">{{ $t('permissions') }}</span>
+          <template #title><span class="menu-name">{{ $t('permissions') }}</span></template>
         </el-menu-item>
-        <el-menu-item @click="router.push({name: 'reg-key'})" index="reg-key" v-perm="'reg-key:query'"
+        <el-menu-item index="reg-key" v-perm="'reg-key:query'"
                       :class="route.meta.name === 'reg-key' ? 'choose-item' : ''">
           <Icon icon="fluent:fingerprint-20-filled" width="22" height="22" />
-          <span class="menu-name">{{ $t('inviteCode') }}</span>
+          <template #title><span class="menu-name">{{ $t('inviteCode') }}</span></template>
         </el-menu-item>
-        <el-menu-item @click="router.push({name: 'sys-setting'})" index="sys-setting" v-perm="'setting:query'"
+        <el-menu-item index="sys-setting" v-perm="'setting:query'"
                       :class="route.meta.name === 'sys-setting' ? 'choose-item' : ''">
           <Icon icon="eos-icons:system-ok-outlined" width="18" height="18" style="margin-left: 2px" />
-          <span class="menu-name">{{ $t('SystemSettings') }}</span>
+          <template #title><span class="menu-name">{{ $t('SystemSettings') }}</span></template>
         </el-menu-item>
       </el-menu>
     </div>
@@ -92,11 +92,17 @@ function openCompose() {
   emailStore.contentData.email = {}
   uiStore.writerRef.open()
 }
+
+function handleMenuSelect(index) {
+  if (index) {
+    router.push({ name: index })
+  }
+}
 </script>
 
 <style lang="scss" scoped>
 .title {
-  margin: 15px 10px;
+  margin: 15px auto;
   height: 45px;
   border-radius: 6px;
   display: flex;
@@ -109,14 +115,14 @@ function openCompose() {
   color: #ffffff;
   cursor: pointer;
   background: linear-gradient(135deg, #1890ff, #3a80dd);
-  transition: all 0.3s ease;
-  max-width: 240px;
+  transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), border-radius 0.3s ease, margin 0.3s ease, padding 0.3s ease;
+  width: 130px;
   padding: 0 10px;
   > div {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    max-width: calc(240px - 20px - 30px);
+    max-width: calc(130px - 20px - 30px);
   }
 }
 
@@ -159,14 +165,16 @@ function openCompose() {
   align-items: center;
 }
 
+:deep(.el-menu--collapse) .el-menu-item {
+  margin: 5px auto;
+  width: 44px;
+  padding: 0 !important;
+  justify-content: center;
+}
+
 .el-menu:not(.el-menu--collapse) .el-menu-item {
   padding: 0 10px !important;
   gap: 10px;
-}
-
-:deep(.el-menu--collapse) .el-menu-item {
-  justify-content: center;
-  padding: 0 !important;
 }
 
 :deep(.el-menu-item .el-menu-tooltip__trigger) {
@@ -219,6 +227,6 @@ function openCompose() {
 }
 
 .scroll {
-  min-height: 100vh;
+  height: 100%;
 }
 </style>

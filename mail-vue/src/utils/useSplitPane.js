@@ -37,6 +37,11 @@ export function useSplitPane() {
     if (win) win.focus()
   }
 
+  function getContainerWidth() {
+    const container = document.querySelector('.email-split')
+    return container ? container.clientWidth : window.innerWidth
+  }
+
   function startResize(e) {
     if (e.button !== 0) return
     e.preventDefault()
@@ -52,14 +57,12 @@ export function useSplitPane() {
 
   function onResize(e) {
     if (!isResizing.value) return
+    const containerWidth = getContainerWidth()
     const delta = e.clientX - startX
-    const newWidth = Math.max(280, Math.min(startWidth + delta, window.innerWidth - 320))
+    const maxWidth = containerWidth - 320
+    const newWidth = Math.max(280, Math.min(startWidth + delta, maxWidth))
     panelWidth.value = newWidth
-    // If dragged to the extreme right (making right panel tiny), close it.
-    // Actually, closing detail means we hide the right panel.
-    // Let's close when right panel is too small (e.g. width > innerWidth - 320)
-    // Wait, the user asked "拖动到最左关闭详情", wait, no. Dragging the divider to the right closes the right panel?
-    if (window.innerWidth - newWidth <= 325) {
+    if (newWidth >= maxWidth) {
       closeDetail()
     }
   }
@@ -72,7 +75,9 @@ export function useSplitPane() {
     document.body.style.cursor = ''
     document.body.style.userSelect = ''
 
-    if (window.innerWidth - panelWidth.value <= 325) {
+    const containerWidth = getContainerWidth()
+    const maxWidth = containerWidth - 320
+    if (panelWidth.value >= maxWidth) {
       panelWidth.value = Math.max(280, parseInt(localStorage.getItem(PANEL_KEY)) || 420)
     }
 
@@ -91,10 +96,12 @@ export function useSplitPane() {
 
   function onTouchMove(e) {
     if (!isResizing.value) return
+    const containerWidth = getContainerWidth()
     const delta = e.touches[0].clientX - startX
-    const newWidth = Math.max(280, Math.min(startWidth + delta, window.innerWidth - 320))
+    const maxWidth = containerWidth - 320
+    const newWidth = Math.max(280, Math.min(startWidth + delta, maxWidth))
     panelWidth.value = newWidth
-    if (window.innerWidth - newWidth <= 325) {
+    if (newWidth >= maxWidth) {
       closeDetail()
     }
   }
