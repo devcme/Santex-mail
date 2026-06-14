@@ -72,6 +72,29 @@ const r2Service = {
 			await s3Service.deleteObj(c, key);
 		}
 
+	},
+
+	async toObjResp(c, key) {
+		const storageType = await this.storageType(c);
+
+		if (storageType === 'R2') {
+			const obj = await c.env.r2.get(key);
+			if (!obj) {
+				return new Response('Not Found', { status: 404 });
+			}
+			const headers = new Headers();
+			obj.writeHttpMetadata(headers);
+			headers.set('etag', obj.httpEtag);
+			return new Response(obj.body, { headers });
+		}
+
+		if (storageType === 'S3') {
+			const resp = await s3Service.getObj(c, key);
+			return resp || new Response('Not Found', { status: 404 });
+		}
+
+		const resp = await kvObjService.getObj(c, key);
+		return resp || new Response('Not Found', { status: 404 });
 	}
 
 };

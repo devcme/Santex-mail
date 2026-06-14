@@ -6,6 +6,7 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
+import { useUiStore } from '@/store/ui.js'
 
 const props = defineProps({
   html: {
@@ -16,10 +17,16 @@ const props = defineProps({
 
 const container = ref(null)
 const contentBox = ref(null)
+const uiStore = useUiStore()
 let shadowRoot = null
 
 function updateContent() {
   if (!shadowRoot) return;
+
+  const isDark = uiStore.dark
+  const textColor = isDark ? '#E5EAF3' : '#13181D'
+  const bgColor = isDark ? '#141414' : '#FFFFFF'
+  const linkColor = isDark ? '#409EFF' : '#0E70DF'
 
   try {
     const bodyStyleRegex = /<body[^>]*style="([^"]*)"[^>]*>/i;
@@ -38,7 +45,7 @@ function updateContent() {
                       'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
           font-size: 14px;
           line-height: 1.5;
-          color: #13181D;
+          color: ${textColor};
           word-break: break-word;
         }
 
@@ -53,11 +60,11 @@ function updateContent() {
 
         a {
           text-decoration: none;
-          color: #0E70DF;
+          color: ${linkColor};
         }
 
         .shadow-content {
-          background: #FFFFFF;
+          background: ${bgColor};
           width: fit-content;
           height: fit-content;
           min-width: 100%;
@@ -113,6 +120,10 @@ onMounted(() => {
 watch(() => props.html, () => {
   updateContent()
   autoScale()
+})
+
+watch(() => uiStore.dark, () => {
+  updateContent()
 })
 </script>
 

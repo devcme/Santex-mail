@@ -44,16 +44,16 @@
             </div>
             <div class="att-box">
               <div class="att-item" v-for="att in email.attList" :key="att.attId">
-                <div class="att-icon-item" @click="showImage(att.key)">
+                <div class="att-icon-item" @click="handleAttClick(att)">
                   <Icon v-bind="getIconByName(att.filename)" />
                 </div>
-                <div class="att-name" @click="showImage(att.key)">
+                <div class="att-name" @click="handleAttClick(att)">
                   {{ att.filename }}
                 </div>
                 <div class="att-size">{{ formatBytes(att.size) }}</div>
                 <div class="opt-icon att-icon-item">
                   <Icon v-if="isImage(att.filename)" icon="hugeicons:view" width="22" height="22" @click="showImage(att.key)"/>
-                  <a :href="cvtR2Url(att.key)" download>
+                  <a :href="cvtR2Url(att.key)" :download="att.filename" target="_blank">
                     <Icon icon="system-uicons:push-down" width="22" height="22"/>
                   </a>
                 </div>
@@ -215,8 +215,14 @@ function showImage(key) {
   showPreview.value = true
 }
 
+function handleAttClick(att) {
+  if (isImage(att.filename || att.key)) {
+    showImage(att.key)
+  }
+}
+
 function isImage(filename) {
-  return ['png', 'jpg', 'jpeg', 'bmp', 'gif', 'jfif'].includes(getExtName(filename))
+  return ['png', 'jpg', 'jpeg', 'bmp', 'gif', 'jfif', 'webp', 'svg', 'tiff', 'ico'].includes(getExtName(filename))
 }
 
 function formateReceive(recipient) {
