@@ -87,7 +87,7 @@ function openCompose() {
     composeTimer = null
     emailStore.contentData.composeMode = 'new'
     emailStore.contentData.email = {}
-    uiStore.writerRef.open()
+    uiStore.writerRef.openNew()
   }, 200)
 }
 
@@ -105,7 +105,8 @@ function openComposeNewWindow() {
     email: {
       _sendEmail: account?.email || user?.email || '',
       _accountId: account?.accountId || user?.account?.accountId || -1,
-      _name: account?.name || user?.name || ''
+      _name: account?.name || user?.name || '',
+      _template: settingStore.settings.emailTemplate || ''
     }
   }))
   const url = `${window.location.origin}/compose`

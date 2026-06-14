@@ -181,6 +181,11 @@ onMounted(() => {
         if (email.text) form.text = email.text
         if (email.attachments) form.attachments = email.attachments
         if (email.draftId) form.draftId = email.draftId
+        if (mode === 'new' && !email.content && email._template) {
+          setTimeout(() => {
+            defValue.value = email._template
+          }, 200)
+        }
       }
 
       editor.value.focus?.()

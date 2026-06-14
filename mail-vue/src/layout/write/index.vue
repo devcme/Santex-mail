@@ -129,6 +129,7 @@ import {ElMessageBox} from "element-plus";
 
 defineExpose({
   open,
+  openNew,
   openReply,
   openForward,
   openDraft
@@ -530,6 +531,22 @@ function open() {
   }
   show.value = true;
   editor.value.focus()
+}
+
+function openNew() {
+  resetForm();
+  const template = settingStore.settings.emailTemplate
+  if (template) {
+    setTimeout(() => {
+      defValue.value = template
+      open()
+      nextTick(() => {
+        backReply.content = editor.value.getContent()
+      })
+    })
+  } else {
+    open()
+  }
 }
 
 function openDraft(draft) {
