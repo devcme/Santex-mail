@@ -65,6 +65,7 @@ import {ElMessage, ElMessageBox} from 'element-plus'
 import {useUiStore} from "@/store/ui.js";
 import {useI18n} from "vue-i18n";
 import { useSplitPane } from '@/utils/useSplitPane.js'
+import { notifyNewEmail } from '@/utils/notify.js'
 
 defineOptions({
   name: 'email'
@@ -178,6 +179,7 @@ async function latest() {
               if (!existIds.has(email.emailId)) {
                 existIds.add(email.emailId)
                 scroll.value.addItem(email)
+                notifyNewEmail(email)
                 await sleep(50)
               }
             }

@@ -104,6 +104,7 @@ import {sleep} from "@/utils/time-utils.js";
 import {useSettingStore} from "@/store/setting.js";
 import { useRoute } from 'vue-router'
 import { useSplitPane } from '@/utils/useSplitPane.js'
+import { notifyNewEmail } from '@/utils/notify.js'
 import { ElMessageBox, ElMessage } from 'element-plus'
 
 defineOptions({ name: 'all-email' })
@@ -228,7 +229,11 @@ async function latest() {
       if (list.length === 0) continue
       if (params.type !== 'receive') continue
       if (params.timeSort !== curTimeSort) continue
-      for (let email of list) { sysEmailScroll.value.addItem(email); await sleep(50) }
+      for (let email of list) {
+        sysEmailScroll.value.addItem(email)
+        notifyNewEmail(email)
+        await sleep(50)
+      }
     } catch (e) {
       if (e.code === 401 || e.code === 403) settingStore.settings.autoRefresh = 0;
       console.error(e)
