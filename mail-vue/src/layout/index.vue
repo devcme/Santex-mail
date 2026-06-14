@@ -41,7 +41,11 @@ const writerRef = ref({})
 const isMobile = ref(window.innerWidth < 1025)
 const handleResize = () => {
   isMobile.value = window.innerWidth < 1025
-  uiStore.asideShow = window.innerWidth > 1024;
+  if (isMobile.value) {
+    uiStore.asideShow = false
+  } else {
+    uiStore.asideShow = !uiStore.asideCollapsed
+  }
 }
 
 onMounted(() => {

@@ -222,6 +222,7 @@ function switchDark(nextIsDark, root) {
 
 function changeAside() {
   uiStore.asideShow = !uiStore.asideShow
+  uiStore.asideCollapsed = !uiStore.asideShow
 }
 
 function clickLogout() {
