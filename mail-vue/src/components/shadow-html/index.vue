@@ -12,6 +12,14 @@ const props = defineProps({
   html: {
     type: String,
     required: true
+  },
+  bgMode: {
+    type: Number,
+    default: 0
+  },
+  zoom: {
+    type: Number,
+    default: 1
   }
 })
 
@@ -24,9 +32,21 @@ function updateContent() {
   if (!shadowRoot) return;
 
   const isDark = uiStore.dark
-  const textColor = isDark ? '#E5EAF3' : '#13181D'
-  const bgColor = isDark ? '#141414' : '#FFFFFF'
-  const linkColor = isDark ? '#409EFF' : '#0E70DF'
+  let textColor, bgColor, linkColor
+
+  if (props.bgMode === 1) {
+    textColor = '#E5EAF3'
+    bgColor = '#141414'
+    linkColor = '#409EFF'
+  } else if (props.bgMode === 2) {
+    textColor = '#13181D'
+    bgColor = '#FFFFFF'
+    linkColor = '#0E70DF'
+  } else {
+    textColor = isDark ? '#E5EAF3' : '#13181D'
+    bgColor = isDark ? '#141414' : '#FFFFFF'
+    linkColor = isDark ? '#409EFF' : '#0E70DF'
+  }
 
   try {
     const bodyStyleRegex = /<body[^>]*style="([^"]*)"[^>]*>/i;
@@ -81,11 +101,21 @@ function updateContent() {
         ${cleanedHtml}
       </div>
     `;
+
+    applyZoom()
   } catch (e) {
     console.warn('ShadowHtml render error:', e)
     if (shadowRoot) {
       shadowRoot.innerHTML = `<div class="shadow-content">${props.html}</div>`
     }
+  }
+}
+
+function applyZoom() {
+  if (!shadowRoot) return
+  const shadowContent = shadowRoot.querySelector('.shadow-content')
+  if (shadowContent) {
+    shadowContent.style.zoom = props.zoom
   }
 }
 
@@ -114,16 +144,22 @@ function autoScale() {
 onMounted(() => {
   shadowRoot = container.value.attachShadow({ mode: 'open' })
   updateContent()
-  autoScale()
 })
 
 watch(() => props.html, () => {
   updateContent()
-  autoScale()
 })
 
 watch(() => uiStore.dark, () => {
   updateContent()
+})
+
+watch(() => props.bgMode, () => {
+  updateContent()
+})
+
+watch(() => props.zoom, () => {
+  applyZoom()
 })
 </script>
 
@@ -131,12 +167,13 @@ watch(() => uiStore.dark, () => {
 .content-box {
   width: 100%;
   height: 100%;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: auto;
   font-family: -apple-system, Inter, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
 }
 
 .content-html {
   width: 100%;
-  height: 100%;
+  min-height: 100%;
 }
 </style>

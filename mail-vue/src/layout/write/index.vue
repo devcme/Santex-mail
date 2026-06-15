@@ -598,7 +598,11 @@ function openNew() {
 
 function insertSignature(sig) {
   const currentContent = editor.value.getContent() || ''
-  editor.value.setContent(currentContent + sig.content)
+  if (form.content || form.receiveEmail.length > 0 || form.subject) {
+    editor.value.setContent(currentContent + sig.content)
+  } else {
+    editor.value.setContent(sig.content)
+  }
   form.content = editor.value.getContent()
   sigPopoverShow.value = false
 }

@@ -38,6 +38,7 @@ import { h } from 'vue'
 const uiStore = useUiStore();
 const draftStore = userDraftStore()
 const writerRef = ref({})
+const { t } = useI18n()
 const isMobile = ref(window.innerWidth < 513)
 const handleResize = () => {
   isMobile.value = window.innerWidth < 513
@@ -81,7 +82,7 @@ async function saveDraftFromStandalone(draftData) {
   try {
     if (draftData.draftId) {
       draftStore.setDraft = { ...draftData }
-    } else {
+    } else if (db.value) {
       const fd = { ...draftData }
       delete fd.draftId
       delete fd.attachments

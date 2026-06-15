@@ -47,10 +47,12 @@ export function useSplitPane() {
 
   function initNarrowObserver(el) {
     if (!el || narrowObserver) return
+    const listPanel = el.querySelector('.email-list-panel')
+    if (!listPanel) return
     narrowObserver = new ResizeObserver(() => {
-      isNarrow.value = el.clientWidth < NARROW_BREAKPOINT
+      isNarrow.value = listPanel.clientWidth < NARROW_BREAKPOINT
     })
-    narrowObserver.observe(el)
+    narrowObserver.observe(listPanel)
   }
 
   function destroyNarrowObserver() {

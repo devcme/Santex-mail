@@ -9,6 +9,12 @@
       </span>
       <Icon class="icon" v-if="showReply" @click="handleReply" @dblclick="handleDblReply" icon="la:reply" width="21" height="21" />
       <Icon class="icon" v-if="showReply" @click="handleForward" @dblclick="handleDblForward" icon="iconoir:arrow-up-right" width="20" height="20" />
+      <div class="toolbar-spacer"></div>
+      <template v-if="uiStore.dark">
+        <Icon class="icon toolbar-right" icon="mdi:theme-light-dark" width="18" height="18" @click="cycleBgMode" />
+      </template>
+      <Icon class="icon toolbar-right" icon="material-symbols:zoom-out-rounded" width="18" height="18" @click="zoomOut" />
+      <Icon class="icon toolbar-right" icon="material-symbols:zoom-in-rounded" width="18" height="18" @click="zoomIn" />
     </div>
     <el-scrollbar class="detail-scrollbar">
       <div class="detail-container">
@@ -34,7 +40,7 @@
             <el-alert v-if="email.status === 5" :closable="false" :title="$t('delayed')" class="email-msg" type="warning" show-icon />
           </div>
           <el-scrollbar class="htm-scrollbar" :class="email.attList && email.attList.length === 0 ? 'bottom-distance' : ''">
-            <ShadowHtml class="shadow-html" :html="formatImage(email.content)" v-if="email.content" />
+            <ShadowHtml class="shadow-html" :html="formatImage(email.content)" :bg-mode="bgMode" :zoom="contentZoom" v-if="email.content" />
             <pre v-else class="email-text">{{ email.text }}</pre>
           </el-scrollbar>
           <div class="att" v-if="email.attList && email.attList.length > 0">
@@ -84,6 +90,7 @@ import { cvtR2Url, toOssDomain } from "@/utils/convert.js";
 import { getIconByName } from "@/utils/icon-utils.js";
 import { useSettingStore } from "@/store/setting.js";
 import { useEmailStore } from "@/store/email.js";
+import { useUiStore } from "@/store/ui.js";
 import { useI18n } from "vue-i18n";
 import { EmailUnreadEnum } from "@/enums/email-enum.js";
 
@@ -118,8 +125,11 @@ const emit = defineEmits(['close', 'reply', 'forward', 'delete', 'star-change'])
 
 const settingStore = useSettingStore();
 const emailStore = useEmailStore();
+const uiStore = useUiStore();
 const showPreview = ref(false)
 const srcList = reactive([])
+const bgMode = ref(0)
+const contentZoom = ref(1)
 const { t } = useI18n()
 
 onMounted(() => {
@@ -250,6 +260,18 @@ function changeStar() {
   }
   emit('star-change', props.email)
 }
+
+function cycleBgMode() {
+  bgMode.value = (bgMode.value + 1) % 3
+}
+
+function zoomIn() {
+  contentZoom.value = Math.min(3, +(contentZoom.value + 0.1).toFixed(1))
+}
+
+function zoomOut() {
+  contentZoom.value = Math.max(0.3, +(contentZoom.value - 0.1).toFixed(1))
+}
 </script>
 <style scoped lang="scss">
 .email-detail-box {
@@ -276,11 +298,20 @@ function changeStar() {
   .icon {
     cursor: pointer;
   }
+  .toolbar-spacer {
+    flex: 1;
+  }
+  .toolbar-right {
+    margin-left: 0;
+  }
 }
 
 .detail-scrollbar {
   flex: 1;
   width: 100%;
+  :deep(.el-scrollbar__view) {
+    overflow-x: auto;
+  }
 }
 
 .detail-container {

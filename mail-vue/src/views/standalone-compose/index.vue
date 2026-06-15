@@ -10,12 +10,12 @@
         </div>
         <div class="header-actions">
           <template v-if="hasContent">
-            <el-tooltip :content="$t('save')" placement="bottom">
-              <Icon icon="mdi:content-save-outline" width="22" height="22" @click="saveDraftLocal" style="cursor: pointer; color: var(--el-text-color-regular);" />
-            </el-tooltip>
-            <el-tooltip :content="$t('delete')" placement="bottom">
-              <Icon icon="mdi:trash-can-outline" width="22" height="22" @click="confirmDiscardLocal" style="cursor: pointer; color: var(--el-text-color-regular);" />
-            </el-tooltip>
+            <div class="action-btn" :title="$t('save')" @click="saveDraftLocal">
+              <Icon icon="mdi:content-save-outline" width="22" height="22" style="color: var(--el-text-color-regular);" />
+            </div>
+            <div class="action-btn" :title="$t('delete')" @click="confirmDiscardLocal">
+              <Icon icon="mdi:trash-can-outline" width="22" height="22" style="color: var(--el-text-color-regular);" />
+            </div>
           </template>
           <template v-else>
             <div class="close-btn" @click="closeWindow" style="cursor: pointer;">
@@ -50,6 +50,7 @@
                   <span class="sig-name">{{ sig.name }}</span>
                   <Icon v-if="sig.isDefault" icon="material-symbols:check-circle" width="16" height="16" style="color: var(--el-color-primary);"/>
                 </div>
+                <div class="sig-hint">{{ t('manageSigInMain') }}</div>
               </div>
             </el-popover>
           </div>
@@ -347,7 +348,11 @@ function clearContent() {
 
 function insertSignature(sig) {
   const currentContent = editor.value?.getContent?.() || ''
-  editor.value?.setContent?.(currentContent + sig.content)
+  if (form.content || form.receiveEmail.length > 0 || form.subject) {
+    editor.value?.setContent?.(currentContent + sig.content)
+  } else {
+    editor.value?.setContent?.(sig.content)
+  }
   form.content = editor.value?.getContent?.() || ''
   userEdited.value = true
   sigPopoverShow.value = false
@@ -479,14 +484,22 @@ function addRecipientRecord() {
 
   .header-actions {
     gap: 12px;
+  }
 
-    .close-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      pointer-events: auto;
-      z-index: 10;
-    }
+  .action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    pointer-events: auto;
+  }
+
+  .close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    pointer-events: auto;
   }
 }
 
@@ -556,16 +569,24 @@ function addRecipientRecord() {
   .sig-name {
     font-size: 14px;
   }
+  .sig-hint {
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+    text-align: center;
+    padding: 4px 0;
+    border-top: 1px solid var(--el-border-color-light);
+  }
 }
 </style>
 
 <style lang="scss">
 .standalone-compose {
   .el-message-box {
-    z-index: 3000;
+    z-index: 3000 !important;
   }
   .el-overlay {
-    z-index: 2999;
+    z-index: 2999 !important;
   }
 }
 </style>
