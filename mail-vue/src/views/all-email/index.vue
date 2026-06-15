@@ -272,15 +272,28 @@ async function latest() {
     }
   }
 
-  &.narrow-view.has-detail .email-list-panel {
-    display: none;
+  &.narrow-view.has-detail {
+    flex-direction: column !important;
+    .email-list-panel {
+      width: 100% !important;
+      flex: none;
+      min-height: 180px;
+      border-right: none;
+    }
+    .resize-handle {
+      display: none !important;
+    }
+    .email-detail-panel {
+      flex: none;
+      min-height: 340px;
+    }
   }
 
   &.is-resizing { * { pointer-events: none; } }
 
   .email-list-panel {
     flex: 1;
-    min-width: 300px;
+    min-width: 400px;
     overflow: hidden;
     transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   }

@@ -462,15 +462,8 @@ function zoomOut() {
   }
 }
 
-.shadow-html::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--message-block-color);
-  pointer-events: none;
+.bottom-distance {
+  margin-bottom: 30px;
 }
 
 .email-text {
@@ -478,9 +471,5 @@ function zoomOut() {
   white-space: pre-wrap;
   word-break: break-word;
   margin: 0;
-}
-
-.bottom-distance {
-  margin-bottom: 30px;
 }
 </style>

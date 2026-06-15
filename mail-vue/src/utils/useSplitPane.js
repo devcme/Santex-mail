@@ -79,8 +79,8 @@ export function useSplitPane() {
     if (!isResizing.value) return
     const containerWidth = getContainerWidth()
     const delta = e.clientX - startX
-    const maxWidth = containerWidth - 320
-    const newWidth = Math.max(280, Math.min(startWidth + delta, maxWidth))
+    const maxWidth = containerWidth - 288
+    const newWidth = Math.max(400, Math.min(startWidth + delta, maxWidth))
     panelWidth.value = newWidth
     if (newWidth >= maxWidth) {
       closeDetail()
@@ -96,9 +96,9 @@ export function useSplitPane() {
     document.body.style.userSelect = ''
 
     const containerWidth = getContainerWidth()
-    const maxWidth = containerWidth - 320
+    const maxWidth = containerWidth - 288
     if (panelWidth.value >= maxWidth) {
-      panelWidth.value = Math.max(280, parseInt(localStorage.getItem(PANEL_KEY)) || 420)
+      panelWidth.value = Math.max(400, parseInt(localStorage.getItem(PANEL_KEY)) || 420)
     }
 
     localStorage.setItem(PANEL_KEY, panelWidth.value)
@@ -118,8 +118,8 @@ export function useSplitPane() {
     if (!isResizing.value) return
     const containerWidth = getContainerWidth()
     const delta = e.touches[0].clientX - startX
-    const maxWidth = containerWidth - 320
-    const newWidth = Math.max(280, Math.min(startWidth + delta, maxWidth))
+    const maxWidth = containerWidth - 288
+    const newWidth = Math.max(400, Math.min(startWidth + delta, maxWidth))
     panelWidth.value = newWidth
     if (newWidth >= maxWidth) {
       closeDetail()
