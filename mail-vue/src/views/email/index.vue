@@ -1,5 +1,5 @@
 <template>
-  <div class="email-split" :class="{ 'has-detail': selectedEmail, 'is-resizing': isResizing }">
+  <div class="email-split" ref="splitEl" :class="{ 'has-detail': selectedEmail, 'is-resizing': isResizing, 'narrow-view': isNarrow }">
     <div class="email-list-panel" :style="selectedEmail ? { width: panelWidth + 'px', flex: 'none' } : {}">
       <emailScroll ref="scroll"
                   :cancel-success="cancelStar"
@@ -57,7 +57,7 @@ import emailScroll from "@/components/email-scroll/index.vue"
 import EmailDetail from "@/components/email-detail/index.vue"
 import {emailList, emailDelete, emailLatest, emailRead} from "@/request/email.js";
 import {starAdd, starCancel} from "@/request/star.js";
-import {defineOptions, onMounted, reactive, ref, watch} from "vue";
+import {defineOptions, onMounted, onBeforeUnmount, reactive, ref, watch} from "vue";
 import {sleep} from "@/utils/time-utils.js";
 import {Icon} from "@iconify/vue";
 import { useRoute } from 'vue-router'
@@ -83,14 +83,22 @@ const params = reactive({
 
 const { t } = useI18n()
 const {
-  selectedEmail, panelWidth, isResizing,
+  selectedEmail, panelWidth, isResizing, isNarrow,
   setEmail, closeDetail, dblClickContent,
-  startResize, handleTouchStart
+  startResize, handleTouchStart,
+  initNarrowObserver, destroyNarrowObserver
 } = useSplitPane()
+
+const splitEl = ref(null)
 
 onMounted(() => {
   emailStore.emailScroll = scroll;
   latest()
+  initNarrowObserver(splitEl.value)
+})
+
+onBeforeUnmount(() => {
+  destroyNarrowObserver()
 })
 
 watch(() => accountStore.currentAccountId, () => {
@@ -215,10 +223,11 @@ function getEmailList(emailId, size) {
   &.has-detail {
     .email-list-panel {
       border-right: none;
-      @media (max-width: 1023px) {
-        display: none;
-      }
     }
+  }
+
+  &.narrow-view.has-detail .email-list-panel {
+    display: none;
   }
 
   &.is-resizing {

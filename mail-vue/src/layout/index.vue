@@ -38,9 +38,9 @@ import { h } from 'vue'
 const uiStore = useUiStore();
 const draftStore = userDraftStore()
 const writerRef = ref({})
-const isMobile = ref(window.innerWidth < 1025)
+const isMobile = ref(window.innerWidth < 513)
 const handleResize = () => {
-  isMobile.value = window.innerWidth < 1025
+  isMobile.value = window.innerWidth < 513
   if (isMobile.value) {
     uiStore.asideShow = false
   } else {
@@ -68,6 +68,12 @@ function handleMessage(event) {
     checkComposeAction()
   } else if (event.data.type === 'save-draft' && event.data.draft) {
     saveDraftFromStandalone(event.data.draft)
+  } else if (event.data.type === 'send-success') {
+    ElNotification({
+      title: t('sendSuccessMsg'),
+      message: t('sendSuccessMsg'),
+      position: 'bottom-right'
+    })
   }
 }
 
@@ -118,7 +124,7 @@ function checkComposeAction() {
   overflow: visible;
   transition: width 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
 
-  @media (max-width: 1025px) {
+  @media (max-width: 512px) {
     position: fixed;
     top: 0;
     left: 0;
@@ -136,7 +142,7 @@ function checkComposeAction() {
   transition: width 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
   z-index: 101;
 
-  @media (max-width: 1025px) {
+  @media (max-width: 512px) {
     position: fixed;
     top: 0;
     left: 0;

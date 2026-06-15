@@ -26,17 +26,33 @@ export function notifyNewEmail(email) {
     const title = email.name || email.sendEmail || 'New Email'
     const body = email.subject || ''
 
-    const notification = new Notification(title, {
-        body,
-        icon: '/public/mail.png',
-        tag: 'email-' + email.emailId,
-        badge: '/public/mail.png'
-    })
+    let notification = null
+    try {
+        notification = new Notification(title, {
+            body,
+            icon: '/public/mail.png',
+            tag: 'email-' + email.emailId,
+            badge: '/public/mail.png'
+        })
 
-    notification.onclick = () => {
-        window.focus()
-        notification.close()
+        notification.onclick = () => {
+            window.focus()
+            if (notification) {
+                try { notification.close() } catch (e) {}
+            }
+        }
+
+        setTimeout(() => {
+            if (notification) {
+                try { notification.close() } catch (e) {}
+            }
+        }, 10000)
+    } catch (e) {
+        console.error('Notification creation failed:', e)
     }
+}
 
-    setTimeout(() => notification.close(), 10000)
+export function isIOS() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
 }

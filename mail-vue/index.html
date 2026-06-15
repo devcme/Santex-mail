@@ -15,7 +15,7 @@
     if (uiStoreStr) {
       try {
         const uiStore = JSON.parse(uiStoreStr)
-        darkMode = uiStore.dark
+        darkMode = uiStore.themeSet ? uiStore.dark : window.matchMedia('(prefers-color-scheme: dark)').matches
       } catch (e) {}
     } else {
       darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches

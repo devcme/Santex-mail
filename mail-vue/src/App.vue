@@ -7,10 +7,20 @@
 import { useI18n } from "vue-i18n";
 import { watch } from "vue";
 import {useSettingStore} from "@/store/setting.js";
+import {useUiStore} from "@/store/ui.js";
 const settingStore = useSettingStore()
+const uiStore = useUiStore()
 import zhCn from 'element-plus/es/locale/lang/zh-cn';
 import('@/icons/index.js')
 const { locale } = useI18n()
 locale.value = settingStore.lang
 watch(() => settingStore.lang, () => locale.value = settingStore.lang)
+
+if (!uiStore.themeSet) {
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+  if (uiStore.dark !== prefersDark) {
+    uiStore.dark = prefersDark
+    document.documentElement.setAttribute('class', prefersDark ? 'dark' : '')
+  }
+}
 </script>

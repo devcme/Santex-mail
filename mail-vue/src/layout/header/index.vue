@@ -5,7 +5,7 @@
       <span class="breadcrumb-item">{{ $t(route.meta.title) }}</span>
     </div>
     <div class="toolbar">
-      <el-popover placement="bottom" :width="280" trigger="click" v-model:visible="notifyPopoverShow">
+      <el-popover :placement="notifyPopoverPlacement" :width="280" trigger="click" v-model:visible="notifyPopoverShow" @show="refreshPermission">
         <template #reference>
           <div class="icon-item bell-icon">
             <Icon icon="mingcute:notification-line" width="20" height="20"/>
@@ -22,11 +22,14 @@
             <span>{{ $t('notifyPermission') }}</span>
             <span class="notify-status" :class="notifyStatusClass">{{ notifyStatusText }}</span>
           </div>
-          <el-button v-if="notifyPermissionVal === 'default'" size="small" type="primary" @click="grantNotification" style="width: 100%; margin-top: 8px;">
+          <el-button v-if="notifyPermissionVal === 'default' && !iOSDevice" size="small" type="primary" @click="grantNotification" style="width: 100%; margin-top: 8px;">
             {{ $t('enableNotification') }}
           </el-button>
           <div v-else-if="notifyPermissionVal === 'denied'" class="notify-denied-tip">
             {{ $t('notifyDeniedTip') }}
+          </div>
+          <div v-if="iOSDevice" class="notify-ios-tip">
+            {{ $t('notifyIosTip') }}
           </div>
         </div>
       </el-popover>
@@ -102,7 +105,7 @@ import {useSettingStore} from "@/store/setting.js";
 import {hasPerm} from "@/perm/perm.js"
 import {useI18n} from "vue-i18n";
 import {setExtend} from "@/utils/day.js"
-import { notifyPermission as getNotifyPermission, requestNotifyPermission, notifySupported } from "@/utils/notify.js"
+import { notifyPermission as getNotifyPermission, requestNotifyPermission, notifySupported, isIOS } from "@/utils/notify.js"
 
 const {t} = useI18n();
 const route = useRoute();
@@ -114,6 +117,10 @@ const userInfoShow = ref(false)
 const userinfoRef = ref({})
 const notifyPopoverShow = ref(false)
 const notifyPermissionVal = ref(notifySupported() ? Notification.permission : 'denied')
+const iOSDevice = ref(isIOS())
+const notifyPopoverPlacement = computed(() => {
+  return window.innerWidth < 768 ? 'bottom-end' : 'bottom'
+})
 
 const notifyStatusText = computed(() => {
   if (!notifySupported()) return t('notifyDenied')
@@ -127,6 +134,12 @@ const notifyStatusClass = computed(() => {
   if (notifyPermissionVal.value === 'denied') return 'status-denied'
   return 'status-default'
 })
+
+function refreshPermission() {
+  if (notifySupported()) {
+    notifyPermissionVal.value = Notification.permission
+  }
+}
 
 async function grantNotification() {
   const result = await requestNotifyPermission()
@@ -264,6 +277,7 @@ function switchDark(nextIsDark, root) {
   const isMobile =  !window.matchMedia("(pointer: fine) and (hover: hover)").matches;
   metaTag.setAttribute('content', nextIsDark ? (isMobile ? '#141414' : '#000000') : (isMobile ? '#FFFFFF' : '#F1F1F1'));
   uiStore.dark = nextIsDark
+  uiStore.themeSet = true
 }
 
 function changeAside() {
@@ -500,6 +514,12 @@ function formatName(email) {
     margin-top: 8px;
     font-size: 13px;
     color: var(--el-text-color-secondary);
+    line-height: 1.4;
+  }
+  .notify-ios-tip {
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--el-color-warning);
     line-height: 1.4;
   }
 }

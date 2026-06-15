@@ -18,17 +18,19 @@
             </el-tooltip>
           </template>
           <template v-else>
-            <Icon icon="material-symbols-light:close-rounded" width="22" height="22" @click="window.close()" style="cursor: pointer;"/>
+            <div class="close-btn" @click="closeWindow" style="cursor: pointer;">
+              <Icon icon="material-symbols-light:close-rounded" width="22" height="22"/>
+            </div>
           </template>
         </div>
       </div>
       <div class="compose-container">
-        <el-input-tag v-model="form.receiveEmail" tag-type="primary" size="default" class="recipient-input">
+        <el-input-tag v-model="form.receiveEmail" tag-type="primary" size="default" class="recipient-input" @change="onRecipientChange">
           <template #prefix>
             <div class="item-title">{{ $t('recipient') }}</div>
           </template>
         </el-input-tag>
-        <el-input v-model="form.subject" :placeholder="t('subject')" />
+        <el-input v-model="form.subject" :placeholder="t('subject')" @input="onSubjectInput" />
         <tinyEditor :def-value="defValue" ref="editor" @change="onEditorChange" />
         <div class="button-row">
           <div class="att-add" @click="chooseFile">
@@ -71,7 +73,7 @@
 </template>
 <script setup>
 import tinyEditor from '@/components/tiny-editor/index.vue'
-import { reactive, ref, onMounted, computed } from "vue";
+import { reactive, ref, onMounted, computed, nextTick } from "vue";
 import { Icon } from "@iconify/vue";
 import { ElMessage, ElNotification, ElMessageBox } from 'element-plus'
 import { useUserStore } from "@/store/user.js";
@@ -102,6 +104,8 @@ const editor = ref({})
 const defValue = ref('')
 const sigPopoverShow = ref(false)
 const signatures = ref([])
+const userEdited = ref(false)
+let formReady = false
 let percentMessage = null
 let sending = false
 const percent = ref(0)
@@ -223,16 +227,38 @@ onMounted(() => {
   window.addEventListener('beforeunload', () => {
     window.removeEventListener('keydown', handleKeyDown, true);
   })
+
+  nextTick(() => {
+    formReady = true
+  })
 })
 
 function onEditorChange(content, text) {
   form.content = content;
   form.text = text
+  if (formReady) userEdited.value = true
 }
 
 const hasContent = computed(() => {
+  if (!userEdited.value) return false
   return !!(form.content || form.subject || form.receiveEmail.length > 0)
 })
+
+function onSubjectInput() {
+  if (formReady) userEdited.value = true
+}
+
+function onRecipientChange() {
+  if (formReady) userEdited.value = true
+}
+
+function closeWindow() {
+  if (window.opener && !window.opener.closed) {
+    window.close()
+  } else {
+    window.location.replace('/')
+  }
+}
 
 const handleKeyDown = (event) => {
   if (event.key === 'Escape') {
@@ -240,7 +266,7 @@ const handleKeyDown = (event) => {
     if (hasContent.value) {
       saveDraftLocal()
     } else {
-      window.close()
+      closeWindow()
     }
   }
 }
@@ -282,7 +308,7 @@ function confirmDiscardLocal() {
     cancelButtonText: t('cancel'),
     type: 'warning'
   }).then(() => {
-    window.close()
+    closeWindow()
   }).catch(() => {})
 }
 
@@ -323,6 +349,7 @@ function insertSignature(sig) {
   const currentContent = editor.value?.getContent?.() || ''
   editor.value?.setContent?.(currentContent + sig.content)
   form.content = editor.value?.getContent?.() || ''
+  userEdited.value = true
   sigPopoverShow.value = false
 }
 
@@ -372,6 +399,9 @@ async function sendEmail() {
     })
     userStore.refreshUserInfo?.()
     addRecipientRecord()
+    if (window.opener && !window.opener.closed) {
+      window.opener.postMessage({ type: 'send-success' }, window.location.origin)
+    }
     window.close()
   }).catch((e) => {
     ElNotification({
@@ -449,6 +479,14 @@ function addRecipientRecord() {
 
   .header-actions {
     gap: 12px;
+
+    .close-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: auto;
+      z-index: 10;
+    }
   }
 }
 
@@ -517,6 +555,17 @@ function addRecipientRecord() {
   }
   .sig-name {
     font-size: 14px;
+  }
+}
+</style>
+
+<style lang="scss">
+.standalone-compose {
+  .el-message-box {
+    z-index: 3000;
+  }
+  .el-overlay {
+    z-index: 2999;
   }
 }
 </style>

@@ -63,7 +63,7 @@ const handleDocMouseMove = (e) => {
 }
 
 function isMobile() {
-  return window.innerWidth < 1025
+  return window.innerWidth < 513
 }
 
 onMounted(() => {

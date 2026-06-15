@@ -36,6 +36,7 @@ const editor = shallowRef(null);
 const isInitialized = ref(false);
 const editorRef = ref(null);
 const showLoading = ref(false);
+let isProgrammaticChange = false
 const uiStore = useUiStore();
 const settingStore = useSettingStore();
 
@@ -49,7 +50,9 @@ onBeforeUnmount(() => {
 
 watch(() => props.defValue, (newValue) => {
   if (editor.value && editor.value.getContent() !== newValue) {
+    isProgrammaticChange = true
     editor.value.setContent(newValue);
+    setTimeout(() => { isProgrammaticChange = false }, 100)
   }
 });
 
@@ -113,10 +116,13 @@ function initEditor() {
     setup: (ed) => {
       editor.value = ed;
       ed.on('init', () => {
+        isProgrammaticChange = true
         ed.setContent(props.defValue);
+        setTimeout(() => { isProgrammaticChange = false }, 100)
         isInitialized.value = true;
       });
       ed.on('input change', () => {
+        if (isProgrammaticChange) return
         const content = ed.getContent();
         const text = ed.getContent({format: 'text'});
         emit('change', content, text);

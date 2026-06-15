@@ -1,5 +1,5 @@
 <template>
-  <div class="email-split" :class="{ 'has-detail': selectedEmail, 'is-resizing': isResizing }">
+  <div class="email-split" ref="splitEl" :class="{ 'has-detail': selectedEmail, 'is-resizing': isResizing, 'narrow-view': isNarrow }">
     <div class="email-list-panel" :style="selectedEmail ? { width: panelWidth + 'px', flex: 'none' } : {}">
       <emailScroll ref="sysEmailScroll"
                   :get-emailList="getEmailList"
@@ -94,7 +94,7 @@
 import {starAdd, starCancel} from "@/request/star.js";
 import emailScroll from "@/components/email-scroll/index.vue"
 import EmailDetail from "@/components/email-detail/index.vue"
-import {computed, defineOptions, reactive, ref, watch, onMounted} from "vue";
+import {computed, defineOptions, reactive, ref, watch, onMounted, onBeforeUnmount} from "vue";
 import {useEmailStore} from "@/store/email.js";
 import { allEmailList, allEmailDelete, allEmailBatchDelete, allEmailLatest } from "@/request/all-email.js";
 import {Icon} from "@iconify/vue";
@@ -121,12 +121,22 @@ const showBathDelete = ref(false)
 const clearLoading = ref(false)
 
 const {
-  selectedEmail, panelWidth, isResizing,
+  selectedEmail, panelWidth, isResizing, isNarrow,
   setEmail, closeDetail, dblClickContent,
-  startResize, handleTouchStart
+  startResize, handleTouchStart,
+  initNarrowObserver, destroyNarrowObserver
 } = useSplitPane()
 
-onMounted(() => { latest(); })
+const splitEl = ref(null)
+
+onMounted(() => {
+  latest();
+  initNarrowObserver(splitEl.value)
+})
+
+onBeforeUnmount(() => {
+  destroyNarrowObserver()
+})
 
 const openSelect = () => { mySelect.value.toggleMenu() }
 
@@ -259,8 +269,11 @@ async function latest() {
 
   &.has-detail {
     .email-list-panel {
-      @media (max-width: 1023px) { display: none; }
     }
+  }
+
+  &.narrow-view.has-detail .email-list-panel {
+    display: none;
   }
 
   &.is-resizing { * { pointer-events: none; } }

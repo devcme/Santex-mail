@@ -191,6 +191,7 @@ const en = {
     notifyDenied: 'Denied',
     notifyDefault: 'Not granted',
     notifyDeniedTip: 'Please allow notification permission in your browser settings',
+    notifyIosTip: 'Browser notifications are not supported on iOS. Add this page to your Home Screen.',
     enableNotification: 'Enable Notification',
     addTurnstileSecret: 'Add turnstile secret',
     backgroundTitle: 'Change Background',
