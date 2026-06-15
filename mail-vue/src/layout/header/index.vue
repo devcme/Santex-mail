@@ -5,6 +5,28 @@
       <span class="breadcrumb-item">{{ $t(route.meta.title) }}</span>
     </div>
     <div class="toolbar">
+      <el-popover placement="bottom" :width="280" trigger="click" v-model:visible="notifyPopoverShow">
+        <template #reference>
+          <div class="icon-item bell-icon">
+            <Icon icon="mingcute:notification-line" width="20" height="20"/>
+          </div>
+        </template>
+        <div class="notify-settings">
+          <div class="notify-title">{{ $t('notificationSettings') }}</div>
+          <div class="notify-item">
+            <span>{{ $t('notifyOnlyHidden') }}</span>
+            <el-switch v-model="uiStore.notifyOnlyHidden" :active-value="true" :inactive-value="false"/>
+          </div>
+          <el-divider />
+          <div class="notify-item">
+            <span>{{ $t('notifyPermission') }}</span>
+            <span class="notify-status" :class="notifyStatusClass">{{ notifyStatusText }}</span>
+          </div>
+          <el-button v-if="notifyPermissionVal === 'default'" size="small" type="primary" @click="grantNotification" style="width: 100%; margin-top: 8px;">
+            {{ $t('enableNotification') }}
+          </el-button>
+        </div>
+      </el-popover>
       <div v-if="uiStore.dark" class="sun-icon icon-item" @click="openDark($event)">
         <Icon icon="mingcute:sun-fill"/>
       </div>
@@ -77,6 +99,7 @@ import {useSettingStore} from "@/store/setting.js";
 import {hasPerm} from "@/perm/perm.js"
 import {useI18n} from "vue-i18n";
 import {setExtend} from "@/utils/day.js"
+import { notifyPermission as getNotifyPermission, requestNotifyPermission, notifySupported } from "@/utils/notify.js"
 
 const {t} = useI18n();
 const route = useRoute();
@@ -86,6 +109,26 @@ const uiStore = useUiStore();
 const logoutLoading = ref(false)
 const userInfoShow = ref(false)
 const userinfoRef = ref({})
+const notifyPopoverShow = ref(false)
+const notifyPermissionVal = ref(notifySupported() ? Notification.permission : 'denied')
+
+const notifyStatusText = computed(() => {
+  if (!notifySupported()) return t('notifyDenied')
+  if (notifyPermissionVal.value === 'granted') return t('notifyGranted')
+  if (notifyPermissionVal.value === 'denied') return t('notifyDenied')
+  return t('notifyDefault')
+})
+
+const notifyStatusClass = computed(() => {
+  if (notifyPermissionVal.value === 'granted') return 'status-granted'
+  if (notifyPermissionVal.value === 'denied') return 'status-denied'
+  return 'status-default'
+})
+
+async function grantNotification() {
+  const result = await requestNotifyPermission()
+  notifyPermissionVal.value = result
+}
 
 const accountCount = computed(() => {
   return userStore.user.role.accountCount
@@ -430,5 +473,25 @@ function formatName(email) {
 
 .el-tooltip__trigger:first-child:focus-visible {
   outline: unset;
+}
+
+.notify-settings {
+  .notify-title {
+    font-weight: bold;
+    margin-bottom: 12px;
+  }
+  .notify-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 14px;
+    padding: 4px 0;
+  }
+  .notify-status {
+    font-size: 13px;
+    &.status-granted { color: var(--el-color-success); }
+    &.status-denied { color: var(--el-color-danger); }
+    &.status-default { color: var(--el-color-warning); }
+  }
 }
 </style>

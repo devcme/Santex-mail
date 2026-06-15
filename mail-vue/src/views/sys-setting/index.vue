@@ -385,21 +385,6 @@
             </div>
           </div>
 
-          <div class="settings-card">
-            <div class="card-title">{{ $t('emailTemplate') }}</div>
-            <div class="card-content">
-              <div class="setting-item">
-                <div><span>{{ $t('emailTemplateDesc') }}</span></div>
-                <div class="forward">
-                  <span>{{ setting.emailTemplate ? $t('enabled') : $t('disabled') }}</span>
-                  <el-button class="opt-button" size="small" type="primary" @click="openEmailTemplate">
-                    <Icon icon="lsicon:edit-outline" width="16" height="16"/>
-                  </el-button>
-                </div>
-              </div>
-            </div>
-          </div>
-
 
         </div>
       </div>
@@ -439,18 +424,6 @@
           <el-input type="text" style="margin-top: 15px" placeholder="Secret Key" v-model="turnstileForm.secretKey"/>
           <el-button type="primary" :loading="settingLoading" @click="saveTurnstileKey">{{ $t('save') }}</el-button>
         </form>
-      </el-dialog>
-      <el-dialog v-model="emailTemplateShow" :title="$t('emailTemplate')" width="700" @closed="emailTemplateInput = setting.emailTemplate">
-        <el-input
-          type="textarea"
-          :rows="15"
-          :placeholder="$t('emailTemplatePlaceholder')"
-          v-model="emailTemplateInput"
-        />
-        <div style="margin-top: 15px; display: flex; justify-content: flex-end; gap: 10px;">
-          <el-button @click="emailTemplateInput = ''">{{ $t('clear') }}</el-button>
-          <el-button type="primary" :loading="settingLoading" @click="saveEmailTemplate">{{ $t('save') }}</el-button>
-        </div>
       </el-dialog>
       <el-dialog
           class="cut-dialog"
@@ -839,8 +812,6 @@ let backup = '{}'
 const addS3Show = ref(false)
 const addVerifyCountShow = ref(false)
 const regVerifyCountShow = ref(false)
-const emailTemplateShow = ref(false)
-const emailTemplateInput = ref('')
 const resendTokenForm = reactive({
   domain: '',
   token: '',
@@ -1355,17 +1326,6 @@ function saveR2domain() {
   editSetting(settingForm)
 }
 
-function openEmailTemplate() {
-  emailTemplateInput.value = setting.value.emailTemplate || ''
-  emailTemplateShow.value = true
-}
-
-function saveEmailTemplate() {
-  const settingForm = {emailTemplate: emailTemplateInput.value}
-  editSetting(settingForm)
-  emailTemplateShow.value = false
-}
-
 function openResendForm() {
   resendTokenFormShow.value = true
 }
@@ -1457,7 +1417,6 @@ function editSetting(settingForm, refreshStatus = true) {
     addS3Show.value = false
     emailPrefixShow.value = false
     aiCodeFilterShow.value = false
-    emailTemplateShow.value = false
   }).catch((e) => {
     loginOpacity.value = setting.value.loginOpacity
     setting.value = {...setting.value, ...JSON.parse(backup)}

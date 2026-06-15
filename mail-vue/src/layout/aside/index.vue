@@ -27,6 +27,7 @@ import router from "@/router/index.js";
 import { useRoute } from "vue-router";
 import { Icon } from "@iconify/vue";
 import { useSettingStore } from "@/store/setting.js";
+import { useSignatureStore } from "@/store/signature.js";
 import { useUiStore } from "@/store/ui.js";
 import { useEmailStore } from "@/store/email.js";
 import { useUserStore } from "@/store/user.js";
@@ -35,7 +36,8 @@ import { useI18n } from "vue-i18n";
 import { computed, ref, onMounted, onBeforeUnmount } from "vue";
 import { hasPerm } from "@/perm/perm.js";
 
-const settingStore = useSettingStore();
+const settingStore = useSettingStore()
+const sigStore = useSignatureStore();
 const uiStore = useUiStore();
 const emailStore = useEmailStore();
 const userStore = useUserStore();
@@ -106,7 +108,7 @@ function openComposeNewWindow() {
       _sendEmail: account?.email || user?.email || '',
       _accountId: account?.accountId || user?.account?.accountId || -1,
       _name: account?.name || user?.name || '',
-      _template: settingStore.settings.emailTemplate || ''
+      _signatures: sigStore.exportForStandalone()
     }
   }))
   const url = `${window.location.origin}/compose`

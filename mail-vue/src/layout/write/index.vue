@@ -63,6 +63,21 @@
           <div class="att-clear" @click="clearContent">
             <Icon icon="icon-park-outline:clear-format" width="24" height="24 "/>
           </div>
+          <el-popover placement="top-start" :width="260" trigger="click" v-model:visible="sigPopoverShow">
+            <template #reference>
+              <div class="att-add">
+                <Icon icon="mdi:draw-pen" width="24" height="24"/>
+              </div>
+            </template>
+            <div class="sig-popover">
+              <div v-if="sigStore.signatures.length === 0" class="sig-empty">{{ t('noSignatures') }}</div>
+              <div v-for="sig in sigStore.signatures" :key="sig.sigId" class="sig-item" @click="insertSignature(sig)">
+                <span class="sig-name">{{ sig.name }}</span>
+                <Icon v-if="sig.isDefault" icon="material-symbols:check-circle" width="16" height="16" style="color: var(--el-color-primary);"/>
+              </div>
+              <el-button size="small" @click="sigManageShow = true; sigPopoverShow = false" style="margin-top: 8px; width: 100%;">{{ t('manageSignatures') }}</el-button>
+            </div>
+          </el-popover>
           <div class="att-list">
             <div class="att-item" v-for="(item,index) in form.attachments" :key="index">
               <Icon v-bind="getIconByName(item.filename)"/>
@@ -100,8 +115,33 @@
         <el-button type="default" @click="deleteContact">{{t('clear')}}</el-button>
         <el-button type="primary" @click="chooseContact">{{t('selectContacts')}}</el-button>
       </div>
-    </el-dialog>
-  </div>
+      </el-dialog>
+      <el-dialog v-model="sigManageShow" :title="t('signatureManage')" width="600" @open="sigStore.loadSignatures()">
+        <div class="sig-manage">
+          <div v-if="sigStore.signatures.length === 0" class="sig-empty">{{ t('noSignatures') }}</div>
+          <div v-for="sig in sigStore.signatures" :key="sig.sigId" class="sig-manage-item">
+            <div class="sig-manage-info">
+              <span class="sig-name">{{ sig.name }}</span>
+              <el-tag v-if="sig.isDefault" size="small" type="success">{{ t('defaultSignature') }}</el-tag>
+            </div>
+            <div class="sig-manage-actions">
+              <el-button size="small" @click="editSignature(sig)">{{ t('edit') }}</el-button>
+              <el-button size="small" @click="setDefaultSig(sig.sigId)" v-if="!sig.isDefault">{{ t('setAsDefault') }}</el-button>
+              <el-button size="small" type="danger" @click="deleteSig(sig.sigId)">{{ t('delete') }}</el-button>
+            </div>
+          </div>
+          <el-divider v-if="sigStore.signatures.length > 0" />
+          <div class="sig-edit-form">
+            <el-input v-model="sigEditForm.name" :placeholder="t('signatureName')" style="margin-bottom: 10px;" />
+            <el-input type="textarea" v-model="sigEditForm.content" :rows="5" :placeholder="t('signatureContent')" />
+            <div class="sig-edit-actions">
+              <el-button v-if="sigEditForm.sigId" size="small" @click="cancelEditSignature">{{ t('cancel') }}</el-button>
+              <el-button type="primary" size="small" @click="saveSignature" :disabled="!sigEditForm.name">{{ sigEditForm.sigId ? t('save') : t('addSignature') }}</el-button>
+            </div>
+          </div>
+        </div>
+      </el-dialog>
+    </div>
   </transition>
 </template>
 <script setup>
@@ -126,6 +166,7 @@ import dayjs from "dayjs";
 import {useI18n} from "vue-i18n";
 import router from "@/router/index.js";
 import {ElMessageBox} from "element-plus";
+import {useSignatureStore} from "@/store/signature.js";
 
 defineExpose({
   open,
@@ -139,6 +180,7 @@ const {t} = useI18n()
 const writerStore = useWriterStore();
 const draftStore = userDraftStore()
 const settingStore = useSettingStore()
+const sigStore = useSignatureStore()
 const emailStore = useEmailStore();
 const accountStore = useAccountStore()
 const editor = ref({})
@@ -152,6 +194,9 @@ const contactsTabRef = ref({})
 const showContacts = ref(false)
 const mySelect = ref()
 let selectStatus = false
+const sigPopoverShow = ref(false)
+const sigManageShow = ref(false)
+const sigEditForm = reactive({ sigId: null, name: '', content: '' })
 const backReply = reactive({
   receiveEmail: [],
   subject: '',
@@ -535,18 +580,57 @@ function open() {
 
 function openNew() {
   resetForm();
-  const template = settingStore.settings.emailTemplate
-  if (template) {
-    setTimeout(() => {
-      defValue.value = template
-      open()
-      nextTick(() => {
-        backReply.content = editor.value.getContent()
+  sigStore.loadSignatures().then(() => {
+    const defaultSig = sigStore.getDefault()
+    if (defaultSig) {
+      setTimeout(() => {
+        defValue.value = defaultSig.content
+        open()
+        nextTick(() => {
+          backReply.content = editor.value.getContent()
+        })
       })
-    })
+    } else {
+      open()
+    }
+  })
+}
+
+function insertSignature(sig) {
+  const currentContent = editor.value.getContent() || ''
+  editor.value.setContent(currentContent + sig.content)
+  form.content = editor.value.getContent()
+  sigPopoverShow.value = false
+}
+
+function editSignature(sig) {
+  sigEditForm.sigId = sig.sigId
+  sigEditForm.name = sig.name
+  sigEditForm.content = sig.content
+}
+
+function cancelEditSignature() {
+  sigEditForm.sigId = null
+  sigEditForm.name = ''
+  sigEditForm.content = ''
+}
+
+async function saveSignature() {
+  if (!sigEditForm.name) return
+  if (sigEditForm.sigId) {
+    await sigStore.updateSignature(sigEditForm.sigId, sigEditForm.name, sigEditForm.content)
   } else {
-    open()
+    await sigStore.addSignature(sigEditForm.name, sigEditForm.content)
   }
+  cancelEditSignature()
+}
+
+async function deleteSig(sigId) {
+  await sigStore.deleteSignature(sigId)
+}
+
+async function setDefaultSig(sigId) {
+  await sigStore.setDefault(sigId)
 }
 
 function openDraft(draft) {
@@ -753,7 +837,7 @@ function openComposeNewWindow() {
 
       .button-item {
         display: grid;
-        grid-template-columns: auto auto 1fr auto;
+        grid-template-columns: auto auto auto 1fr auto;
 
         .att-add {
           cursor: pointer;
@@ -838,5 +922,60 @@ function openComposeNewWindow() {
 
 .icon {
   cursor: pointer;
+}
+
+.sig-popover {
+  .sig-empty {
+    color: var(--el-text-color-secondary);
+    text-align: center;
+    padding: 10px 0;
+  }
+  .sig-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 8px;
+    cursor: pointer;
+    border-radius: 4px;
+    &:hover {
+      background: var(--el-fill-color-light);
+    }
+  }
+  .sig-name {
+    font-size: 14px;
+  }
+}
+
+.sig-manage {
+  .sig-empty {
+    color: var(--el-text-color-secondary);
+    text-align: center;
+    padding: 20px 0;
+  }
+  .sig-manage-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--el-border-color-lighter);
+  }
+  .sig-manage-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .sig-manage-actions {
+    display: flex;
+    gap: 6px;
+  }
+  .sig-edit-form {
+    margin-top: 10px;
+  }
+  .sig-edit-actions {
+    margin-top: 10px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
 }
 </style>

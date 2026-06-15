@@ -34,7 +34,6 @@ import writer from '@/layout/write/index.vue'
 import db from '@/db/db.js'
 import { userDraftStore } from '@/store/draft.js'
 import { h } from 'vue'
-import { requestNotifyPermission } from '@/utils/notify.js'
 
 const uiStore = useUiStore();
 const draftStore = userDraftStore()
@@ -56,8 +55,6 @@ onMounted(() => {
   handleResize()
 
   window.addEventListener('message', handleMessage)
-
-  requestNotifyPermission()
 })
 
 onBeforeUnmount(() => {

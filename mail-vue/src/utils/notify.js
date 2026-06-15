@@ -1,8 +1,11 @@
+import { useUiStore } from '@/store/ui.js'
+
 export function notifySupported() {
     return 'Notification' in window
 }
 
 export function notifyPermission() {
+    if (!notifySupported()) return 'denied'
     return Notification.permission
 }
 
@@ -16,7 +19,9 @@ export async function requestNotifyPermission() {
 
 export function notifyNewEmail(email) {
     if (!notifySupported() || Notification.permission !== 'granted') return
-    if (!document.hidden) return
+
+    const uiStore = useUiStore()
+    if (uiStore.notifyOnlyHidden && !document.hidden) return
 
     const title = email.name || email.sendEmail || 'New Email'
     const body = email.subject || ''

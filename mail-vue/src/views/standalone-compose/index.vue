@@ -181,10 +181,13 @@ onMounted(() => {
         if (email.text) form.text = email.text
         if (email.attachments) form.attachments = email.attachments
         if (email.draftId) form.draftId = email.draftId
-        if (mode === 'new' && !email.content && email._template) {
-          setTimeout(() => {
-            defValue.value = email._template
-          }, 200)
+        if (mode === 'new' && !email.content && email._signatures) {
+          const defaultSig = email._signatures.find(s => s.isDefault === 1)
+          if (defaultSig) {
+            setTimeout(() => {
+              defValue.value = defaultSig.content
+            }, 200)
+          }
         }
       }
 
