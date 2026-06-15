@@ -1,5 +1,5 @@
 <template>
-  <div class="email-container">
+  <div class="email-container" :class="{ 'compact-mode': compact }">
     <div class="header-actions">
       <el-checkbox
           v-model="checkAll"
@@ -297,6 +297,10 @@ const props = defineProps({
     default: false
   },
   splitActive: {
+    type: Boolean,
+    default: false
+  },
+  compact: {
     type: Boolean,
     default: false
   }
@@ -1392,6 +1396,24 @@ ul {
   list-style: none;
   padding: 0;
   margin: 0;
+}
+
+.compact-mode :deep(.email-row) {
+  height: 83px !important;
+  &.all-email { height: 132px !important; }
+  .user-info { flex-direction: column !important; }
+  .title-column { grid-template-columns: 1fr !important; gap: 4px !important; }
+  .email-text { grid-template-columns: 1fr !important; }
+  .email-right { display: none !important; }
+  .email-right-skeleton { display: none !important; }
+  .email-content { padding-left: 0 !important; margin-top: 0 !important; }
+  .pc-star { display: none !important; }
+  .phone-star { display: block !important; }
+  .phone-time { display: block !important; }
+  .email-text-skeleton .text-skeleton-two { display: block !important; width: 100% !important; }
+  .email-text-skeleton .text-skeleton-one { width: 40% !important; }
+  .email-status { flex-direction: row !important; gap: 5px !important; }
+  .title { padding-right: 15px; }
 }
 
 </style>

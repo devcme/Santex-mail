@@ -10,6 +10,7 @@
                   show-status
                    actionLeft="4px"
                    :split-active="!!selectedEmail"
+                   :compact="isNarrow"
                    :star-cancel="starCancel"
                    @jump="onJump"
                   @dblclick="onDblClick"
@@ -138,19 +139,7 @@ function getEmailList(emailId, size) {
   }
 
   &.narrow-view.has-detail {
-    flex-direction: column !important;
     .email-list-panel {
-      width: 100% !important;
-      flex: none;
-      min-height: 180px;
-      border-right: none;
-    }
-    .resize-handle {
-      display: none !important;
-    }
-    .email-detail-panel {
-      flex: none;
-      min-height: 340px;
     }
   }
 

@@ -12,6 +12,7 @@
                    @dblclick="onDblClick"
                    actionLeft="6px"
                    :split-active="!!selectedEmail"
+                   :compact="isNarrow"
                    :show-account-icon="false"
       />
     </div>
@@ -110,19 +111,7 @@ onBeforeUnmount(() => {
   }
 
   &.narrow-view.has-detail {
-    flex-direction: column !important;
     .email-list-panel {
-      width: 100% !important;
-      flex: none;
-      min-height: 180px;
-      border-right: none;
-    }
-    .resize-handle {
-      display: none !important;
-    }
-    .email-detail-panel {
-      flex: none;
-      min-height: 340px;
     }
   }
 

@@ -262,7 +262,7 @@ function changeStar() {
 }
 
 function cycleBgMode() {
-  bgMode.value = (bgMode.value + 1) % 3
+  bgMode.value = bgMode.value === 2 ? 0 : 2
 }
 
 function zoomIn() {

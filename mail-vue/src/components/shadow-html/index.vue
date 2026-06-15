@@ -33,31 +33,16 @@ function updateContent() {
 
   const isDark = uiStore.dark
   let textColor, bgColor, linkColor
-  const useDrFilter = props.bgMode === 1
 
-  if (props.bgMode === 1 || (props.bgMode === 0 && isDark)) {
-    textColor = '#E5EAF3'
-    bgColor = '#141414'
-    linkColor = '#409EFF'
-  } else {
+  if (props.bgMode === 2 || (props.bgMode === 0 && !isDark)) {
     textColor = '#13181D'
     bgColor = '#FFFFFF'
     linkColor = '#0E70DF'
+  } else {
+    textColor = '#E5EAF3'
+    bgColor = '#141414'
+    linkColor = '#409EFF'
   }
-
-  const drFilterCSS = useDrFilter ? `
-        .shadow-content {
-          filter: invert(0.92) hue-rotate(180deg);
-        }
-        .shadow-content img,
-        .shadow-content video,
-        .shadow-content svg,
-        .shadow-content [style*="background-image"],
-        .shadow-content [style*="background:url"],
-        .shadow-content [style*="background: url"] {
-          filter: invert(0.92) hue-rotate(180deg);
-        }
-  ` : ''
 
   try {
     const bodyStyleRegex = /<body[^>]*style="([^"]*)"[^>]*>/i;
@@ -106,8 +91,6 @@ function updateContent() {
           max-width: 100%;
           height: auto !important;
         }
-
-        ${drFilterCSS}
 
       </style>
       <div class="shadow-content">
