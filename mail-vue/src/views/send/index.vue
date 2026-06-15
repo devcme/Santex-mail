@@ -1,5 +1,5 @@
 <template>
-  <div class="email-split" ref="splitEl" :class="{ 'has-detail': selectedEmail, 'is-resizing': isResizing, 'narrow-view': isNarrow }">
+  <div class="email-split" :class="{ 'has-detail': selectedEmail, 'is-resizing': isResizing, 'narrow-view': isNarrow }">
     <div class="email-list-panel" :style="selectedEmail ? { width: panelWidth + 'px', flex: 'none' } : {}">
       <emailScroll ref="sendScroll"
                   :cancel-success="cancelStar"
@@ -54,7 +54,7 @@ import emailScroll from "@/components/email-scroll/index.vue"
 import EmailDetail from "@/components/email-detail/index.vue"
 import {emailList, emailDelete} from "@/request/email.js";
 import {starAdd, starCancel} from "@/request/star.js";
-import {defineOptions, onMounted, onBeforeUnmount, reactive, ref, watch} from "vue";
+import {defineOptions, onMounted, reactive, ref, watch} from "vue";
 import {Icon} from "@iconify/vue";
 import {useUiStore} from "@/store/ui.js";
 import { useSplitPane } from '@/utils/useSplitPane.js'
@@ -70,19 +70,11 @@ const params = reactive({ timeSort: 0 })
 const {
   selectedEmail, panelWidth, isResizing, isNarrow,
   setEmail, closeDetail, dblClickContent,
-  startResize, handleTouchStart,
-  initNarrowObserver, destroyNarrowObserver
+  startResize, handleTouchStart
 } = useSplitPane()
-
-const splitEl = ref(null)
 
 onMounted(() => {
   emailStore.sendScroll = sendScroll;
-  initNarrowObserver(splitEl.value)
-})
-
-onBeforeUnmount(() => {
-  destroyNarrowObserver()
 })
 
 watch(() => accountStore.currentAccountId, () => {

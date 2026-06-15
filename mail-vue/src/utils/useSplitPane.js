@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useEmailStore } from '@/store/email.js'
 
 const PANEL_KEY = 'split-panel-width'
@@ -9,10 +9,9 @@ export function useSplitPane() {
   const selectedEmail = ref(null)
   const panelWidth = ref(parseInt(localStorage.getItem(PANEL_KEY)) || 420)
   const isResizing = ref(false)
-  const isNarrow = ref(false)
+  const isNarrow = computed(() => !!selectedEmail.value && panelWidth.value < NARROW_BREAKPOINT)
   let startX = 0
   let startWidth = 0
-  let narrowObserver = null
 
   function setEmail(email, opts = {}) {
     emailStore.contentData.email = email
@@ -43,23 +42,6 @@ export function useSplitPane() {
   function getContainerWidth() {
     const container = document.querySelector('.email-split')
     return container ? container.clientWidth : window.innerWidth
-  }
-
-  function initNarrowObserver(el) {
-    if (!el || narrowObserver) return
-    const listPanel = el.querySelector('.email-list-panel')
-    if (!listPanel) return
-    narrowObserver = new ResizeObserver(() => {
-      isNarrow.value = listPanel.clientWidth < NARROW_BREAKPOINT
-    })
-    narrowObserver.observe(listPanel)
-  }
-
-  function destroyNarrowObserver() {
-    if (narrowObserver) {
-      narrowObserver.disconnect()
-      narrowObserver = null
-    }
   }
 
   function startResize(e) {
@@ -141,8 +123,6 @@ export function useSplitPane() {
     closeDetail,
     dblClickContent,
     startResize,
-    handleTouchStart,
-    initNarrowObserver,
-    destroyNarrowObserver
+    handleTouchStart
   }
 }

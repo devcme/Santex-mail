@@ -22,7 +22,7 @@
             <span>{{ $t('notifyPermission') }}</span>
             <span class="notify-status" :class="notifyStatusClass">{{ notifyStatusText }}</span>
           </div>
-          <el-button v-if="notifyPermissionVal === 'default' && !iOSDevice" size="small" type="primary" @click="grantNotification" style="width: 100%; margin-top: 8px;">
+          <el-button v-if="notifyPermissionVal === 'default'" size="small" type="primary" @click="grantNotification" style="width: 100%; margin-top: 8px;">
             {{ $t('enableNotification') }}
           </el-button>
           <div v-else-if="notifyPermissionVal === 'denied'" class="notify-denied-tip">

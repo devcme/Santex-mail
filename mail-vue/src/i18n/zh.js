@@ -191,7 +191,7 @@ const zh = {
     notifyDenied: '已拒绝',
     notifyDefault: '未授权',
     notifyDeniedTip: '请在浏览器设置中允许通知权限',
-    notifyIosTip: 'iOS 系统不支持浏览器通知，请将本页添加到主屏幕以接收通知',
+    notifyIosTip: 'iOS 设备请点击分享，添加到主屏幕，然后打开后即可使用系统通知功能',
     manageSigInMain: '请在主窗口的新邮件处管理签名',
     enableNotification: '开启通知',
     addTurnstileSecret: '添加 Turnstile 密钥',

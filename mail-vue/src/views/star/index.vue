@@ -1,5 +1,5 @@
 <template>
-  <div class="email-split" ref="splitEl" :class="{ 'has-detail': selectedEmail, 'is-resizing': isResizing, 'narrow-view': isNarrow }">
+  <div class="email-split" :class="{ 'has-detail': selectedEmail, 'is-resizing': isResizing, 'narrow-view': isNarrow }">
     <div class="email-list-panel" :style="selectedEmail ? { width: panelWidth + 'px', flex: 'none' } : {}">
       <emailScroll type="star" ref="scroll"
                   :allow-star="false"
@@ -44,7 +44,7 @@ import EmailDetail from "@/components/email-detail/index.vue"
 import {emailDelete} from "@/request/email.js";
 import {starAdd, starCancel, starList} from "@/request/star.js";
 import {useEmailStore} from "@/store/email.js";
-import {defineOptions, onMounted, onBeforeUnmount, ref} from "vue";
+import {defineOptions, onMounted, ref} from "vue";
 import {useUiStore} from "@/store/ui.js";
 import { useSplitPane } from '@/utils/useSplitPane.js'
 
@@ -57,11 +57,8 @@ const uiStore = useUiStore();
 const {
   selectedEmail, panelWidth, isResizing, isNarrow,
   setEmail, closeDetail, dblClickContent,
-  startResize, handleTouchStart,
-  initNarrowObserver, destroyNarrowObserver
+  startResize, handleTouchStart
 } = useSplitPane()
-
-const splitEl = ref(null)
 
 function onJump(email) {
   setEmail(email, { delType: 'logic', showStar: true, showReply: true, showUnread: true })
@@ -92,11 +89,6 @@ function onStarChange(email) {
 
 onMounted(() => {
   emailStore.starScroll = scroll
-  initNarrowObserver(splitEl.value)
-})
-
-onBeforeUnmount(() => {
-  destroyNarrowObserver()
 })
 </script>
 <style scoped lang="scss">

@@ -191,7 +191,7 @@ const en = {
     notifyDenied: 'Denied',
     notifyDefault: 'Not granted',
     notifyDeniedTip: 'Please allow notification permission in your browser settings',
-    notifyIosTip: 'Browser notifications are not supported on iOS. Add this page to your Home Screen.',
+    notifyIosTip: 'On iOS, tap Share, then Add to Home Screen. Open from the home screen icon to enable system notifications.',
     manageSigInMain: 'Manage signatures in the main window\'s compose panel',
     enableNotification: 'Enable Notification',
     addTurnstileSecret: 'Add turnstile secret',
