@@ -27,7 +27,7 @@ const emailService = {
 
 	async list(c, params, userId) {
 
-		let { emailId, type, accountId, size, timeSort, allReceive } = params;
+		let { emailId, type, accountId, size, timeSort, allReceive, name, subject } = params;
 
 		size = Number(size);
 		emailId = Number(emailId);
@@ -54,6 +54,23 @@ const emailService = {
 			allReceive = accountRow.allReceive;
 		}
 
+		const conditions = [
+			allReceive ? eq(1,1) : eq(email.accountId, accountId),
+			eq(email.userId, userId),
+			timeSort ? gt(email.emailId, emailId) : lt(email.emailId, emailId),
+			eq(email.type, type),
+			eq(email.isDel, isDel.NORMAL),
+			eq(account.isDel, isDel.NORMAL)
+		];
+
+		if (name) {
+			conditions.push(sql`${email.name} COLLATE NOCASE LIKE ${'%' + name + '%'}`);
+		}
+
+		if (subject) {
+			conditions.push(sql`${email.subject} COLLATE NOCASE LIKE ${'%' + subject + '%'}`);
+		}
+
 		const query = orm(c)
 			.select({
 				...email,
@@ -71,14 +88,7 @@ const emailService = {
 				eq(account.accountId, email.accountId)
 			)
 			.where(
-				and(
-					allReceive ? eq(1,1) : eq(email.accountId, accountId),
-					eq(email.userId, userId),
-					timeSort ? gt(email.emailId, emailId) : lt(email.emailId, emailId),
-					eq(email.type, type),
-					eq(email.isDel, isDel.NORMAL),
-					eq(account.isDel, isDel.NORMAL)
-				)
+				and(...conditions)
 			);
 
 		if (timeSort) {
@@ -89,20 +99,30 @@ const emailService = {
 
 		const listQuery = query.limit(size).all();
 
+		const totalConditions = [
+			allReceive ? eq(1,1) : eq(email.accountId, accountId),
+			eq(email.userId, userId),
+			eq(email.type, type),
+			eq(email.isDel, isDel.NORMAL),
+			eq(account.isDel, isDel.NORMAL)
+		];
+
+		if (name) {
+			totalConditions.push(sql`${email.name} COLLATE NOCASE LIKE ${'%' + name + '%'}`);
+		}
+
+		if (subject) {
+			totalConditions.push(sql`${email.subject} COLLATE NOCASE LIKE ${'%' + subject + '%'}`);
+		}
+
 		const totalQuery = orm(c).select({ total: count() }).from(email)
 			.leftJoin(
 				account,
 				eq(account.accountId, email.accountId)
 			)
 			.where(
-				and(
-					allReceive ? eq(1,1) : eq(email.accountId, accountId),
-					eq(email.userId, userId),
-					eq(email.type, type),
-					eq(email.isDel, isDel.NORMAL),
-					eq(account.isDel, isDel.NORMAL)
-				)
-		).get();
+				and(...totalConditions)
+			).get();
 
 		const latestEmailQuery = orm(c).select().from(email).where(
 			and(

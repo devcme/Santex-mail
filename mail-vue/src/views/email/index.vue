@@ -13,15 +13,34 @@
                   :show-unread="true"
                    actionLeft="4px"
                    :split-active="!!selectedEmail"
-                   :compact="isNarrow"
+                   :compact="compactMode"
                    @jump="onJump"
-                  @dblclick="onDblClick"
+                   @dblclick="onDblClick"
       >
         <template #first>
           <Icon class="icon" @click="changeTimeSort" icon="material-symbols-light:timer-arrow-down-outline"
                 v-if="params.timeSort === 0" width="28" height="28"/>
           <Icon class="icon" @click="changeTimeSort" icon="material-symbols-light:timer-arrow-up-outline" v-else
                 width="28" height="28"/>
+          <Icon class="icon" :class="{ 'icon-active': compactOverride }" @click="compactOverride = !compactOverride"
+                :icon="compactOverride ? 'material-symbols:view-agenda-rounded' : 'material-symbols:view-stream-rounded'" width="22" height="22"/>
+          <el-popover placement="bottom" :width="320" trigger="click" v-model:visible="searchPopoverShow">
+            <template #reference>
+              <Icon class="icon" icon="iconoir:search" width="20" height="20"/>
+            </template>
+            <div class="search-popover">
+              <div class="search-popover-title">{{ $t('search') }}</div>
+              <el-select v-model="searchParams.searchType" :placeholder="$t('select')" style="width: 100%; margin-bottom: 8px;">
+                <el-option :label="$t('sender')" value="name"/>
+                <el-option :label="$t('subject')" value="subject"/>
+              </el-select>
+              <el-input v-model="searchParams.keyword" :placeholder="$t('searchByContent')" @keyup.enter="doSearch" style="margin-bottom: 8px;"/>
+              <div class="search-popover-actions">
+                <el-button size="small" @click="clearSearch">{{ $t('cancel') }}</el-button>
+                <el-button size="small" type="primary" @click="doSearch">{{ $t('search') }}</el-button>
+              </div>
+            </div>
+          </el-popover>
         </template>
       </emailScroll>
     </div>
@@ -58,7 +77,7 @@ import emailScroll from "@/components/email-scroll/index.vue"
 import EmailDetail from "@/components/email-detail/index.vue"
 import {emailList, emailDelete, emailLatest, emailRead} from "@/request/email.js";
 import {starAdd, starCancel} from "@/request/star.js";
-import {defineOptions, onMounted, reactive, ref, watch} from "vue";
+import {defineOptions, onMounted, reactive, ref, watch, computed} from "vue";
 import {sleep} from "@/utils/time-utils.js";
 import {Icon} from "@iconify/vue";
 import { useRoute } from 'vue-router'
@@ -88,6 +107,12 @@ const {
   setEmail, closeDetail, dblClickContent,
   startResize, handleTouchStart
 } = useSplitPane()
+
+const compactOverride = ref(false)
+const compactMode = computed(() => isNarrow.value || compactOverride.value)
+const searchPopoverShow = ref(false)
+const searchParams = reactive({ searchType: 'name', keyword: '' })
+const activeSearchParams = ref(null)
 
 onMounted(() => {
   emailStore.emailScroll = scroll;
@@ -200,11 +225,30 @@ function cancelStar(email) { emailStore.starScroll?.deleteEmail([email.emailId])
 function getEmailList(emailId, size) {
   const accountId = accountStore.currentAccountId;
   const allReceive = accountStore.currentAccount.allReceive;
-  return emailList(accountId, allReceive, emailId, params.timeSort, size, 0).then(data => {
+  const extra = activeSearchParams.value ? activeSearchParams.value : {}
+  return emailList(accountId, allReceive, emailId, params.timeSort, size, 0, extra).then(data => {
     data.latestEmail.reqAccountId = accountId;
     data.latestEmail.allReceive = allReceive;
     return data;
   })
+}
+
+function doSearch() {
+  if (!searchParams.keyword) {
+    activeSearchParams.value = null
+  } else {
+    activeSearchParams.value = {}
+    activeSearchParams.value[searchParams.searchType] = searchParams.keyword
+  }
+  scroll.value.refreshList()
+  searchPopoverShow.value = false
+}
+
+function clearSearch() {
+  searchParams.keyword = ''
+  activeSearchParams.value = null
+  scroll.value.refreshList()
+  searchPopoverShow.value = false
 }
 </script>
 <style scoped lang="scss">
@@ -293,4 +337,17 @@ function getEmailList(emailId, size) {
 }
 
 .icon { cursor: pointer; }
+.icon-active { color: var(--el-color-primary); }
+
+.search-popover {
+  .search-popover-title {
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  .search-popover-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+}
 </style>

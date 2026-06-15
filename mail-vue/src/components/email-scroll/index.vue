@@ -103,7 +103,7 @@
                       <span>
                         <Icon icon="mdi-light:email" width="20" height="20"/>
                       </span>
-                      <span>{{ item.type === 0 ? item.toEmail : item.sendEmail }}</span>
+                      <span>{{ item.type === 0 ? item.sendEmail : item.toEmail }}</span>
                     </div>
                   </div>
                 </div>
