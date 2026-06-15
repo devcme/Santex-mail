@@ -65,7 +65,7 @@
           </div>
           <el-popover placement="top-start" :width="260" trigger="click" v-model:visible="sigPopoverShow">
             <template #reference>
-              <div class="att-add">
+              <div class="att-add sig-btn">
                 <Icon icon="mdi:draw-pen" width="24" height="24"/>
               </div>
             </template>
@@ -575,7 +575,7 @@ function open() {
     form.name = accountStore.currentAccount.name;
   }
   show.value = true;
-  editor.value.focus()
+  editor.value?.focus?.()
 }
 
 function openNew() {
@@ -841,6 +841,10 @@ function openComposeNewWindow() {
 
         .att-add {
           cursor: pointer;
+        }
+
+        .sig-btn {
+          margin-left: 10px;
         }
 
         .att-clear {

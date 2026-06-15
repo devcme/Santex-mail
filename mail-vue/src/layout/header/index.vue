@@ -25,6 +25,9 @@
           <el-button v-if="notifyPermissionVal === 'default'" size="small" type="primary" @click="grantNotification" style="width: 100%; margin-top: 8px;">
             {{ $t('enableNotification') }}
           </el-button>
+          <div v-else-if="notifyPermissionVal === 'denied'" class="notify-denied-tip">
+            {{ $t('notifyDeniedTip') }}
+          </div>
         </div>
       </el-popover>
       <div v-if="uiStore.dark" class="sun-icon icon-item" @click="openDark($event)">
@@ -492,6 +495,12 @@ function formatName(email) {
     &.status-granted { color: var(--el-color-success); }
     &.status-denied { color: var(--el-color-danger); }
     &.status-default { color: var(--el-color-warning); }
+  }
+  .notify-denied-tip {
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--el-text-color-secondary);
+    line-height: 1.4;
   }
 }
 </style>

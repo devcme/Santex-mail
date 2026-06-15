@@ -190,6 +190,7 @@ const en = {
     notifyGranted: 'Granted',
     notifyDenied: 'Denied',
     notifyDefault: 'Not granted',
+    notifyDeniedTip: 'Please allow notification permission in your browser settings',
     enableNotification: 'Enable Notification',
     addTurnstileSecret: 'Add turnstile secret',
     backgroundTitle: 'Change Background',

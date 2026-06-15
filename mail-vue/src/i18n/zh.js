@@ -190,6 +190,7 @@ const zh = {
     notifyGranted: '已授权',
     notifyDenied: '已拒绝',
     notifyDefault: '未授权',
+    notifyDeniedTip: '请在浏览器设置中允许通知权限',
     enableNotification: '开启通知',
     addTurnstileSecret: '添加 Turnstile 密钥',
     backgroundTitle: '设置背景',

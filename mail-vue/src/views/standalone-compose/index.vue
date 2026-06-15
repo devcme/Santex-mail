@@ -34,6 +34,23 @@
           <div class="att-add" @click="chooseFile">
             <Icon icon="iconamoon:attachment-fill" width="24" height="24"/>
           </div>
+          <div class="att-clear" @click="clearContent">
+            <Icon icon="icon-park-outline:clear-format" width="24" height="24"/>
+          </div>
+          <div class="att-add sig-btn">
+            <el-popover placement="top-start" :width="260" trigger="click" v-model:visible="sigPopoverShow">
+              <template #reference>
+                <Icon icon="mdi:draw-pen" width="24" height="24"/>
+              </template>
+              <div class="sig-popover">
+                <div v-if="signatures.length === 0" class="sig-empty">{{ t('noSignatures') }}</div>
+                <div v-for="sig in signatures" :key="sig.sigId" class="sig-item" @click="insertSignature(sig)">
+                  <span class="sig-name">{{ sig.name }}</span>
+                  <Icon v-if="sig.isDefault" icon="material-symbols:check-circle" width="16" height="16" style="color: var(--el-color-primary);"/>
+                </div>
+              </div>
+            </el-popover>
+          </div>
           <div class="att-list">
             <div class="att-item" v-for="(item, index) in form.attachments" :key="index">
               <Icon v-bind="getIconByName(item.filename)"/>
@@ -83,6 +100,8 @@ const userStore = useUserStore();
 const draftStore = userDraftStore()
 const editor = ref({})
 const defValue = ref('')
+const sigPopoverShow = ref(false)
+const signatures = ref([])
 let percentMessage = null
 let sending = false
 const percent = ref(0)
@@ -182,16 +201,19 @@ onMounted(() => {
         if (email.attachments) form.attachments = email.attachments
         if (email.draftId) form.draftId = email.draftId
         if (mode === 'new' && !email.content && email._signatures) {
+          signatures.value = email._signatures
           const defaultSig = email._signatures.find(s => s.isDefault === 1)
           if (defaultSig) {
             setTimeout(() => {
               defValue.value = defaultSig.content
             }, 200)
           }
+        } else if (email._signatures) {
+          signatures.value = email._signatures
         }
       }
 
-      editor.value.focus?.()
+      editor.value?.focus?.()
     } catch (e) {
       console.error('Failed to init compose content:', e)
     }
@@ -289,6 +311,19 @@ function chooseFile() {
 
 function delAtt(index) {
   form.attachments.splice(index, 1);
+}
+
+function clearContent() {
+  editor.value?.clearEditor?.()
+  form.content = ''
+  form.text = ''
+}
+
+function insertSignature(sig) {
+  const currentContent = editor.value?.getContent?.() || ''
+  editor.value?.setContent?.(currentContent + sig.content)
+  form.content = editor.value?.getContent?.() || ''
+  sigPopoverShow.value = false
 }
 
 async function sendEmail() {
@@ -426,9 +461,15 @@ function addRecipientRecord() {
 
 .button-row {
   display: grid;
-  grid-template-columns: auto auto 1fr auto;
+  grid-template-columns: auto auto auto 1fr auto;
 
   .att-add { cursor: pointer; }
+  .sig-btn { margin-left: 10px; }
+
+  .att-clear {
+    cursor: pointer;
+    margin-left: 10px;
+  }
 
   .att-list {
     display: grid;
@@ -454,6 +495,28 @@ function addRecipientRecord() {
       border-radius: 4px;
       .att-filename { white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
     }
+  }
+}
+
+.sig-popover {
+  .sig-empty {
+    color: var(--el-text-color-secondary);
+    text-align: center;
+    padding: 10px 0;
+  }
+  .sig-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 8px;
+    cursor: pointer;
+    border-radius: 4px;
+    &:hover {
+      background: var(--el-fill-color-light);
+    }
+  }
+  .sig-name {
+    font-size: 14px;
   }
 }
 </style>
