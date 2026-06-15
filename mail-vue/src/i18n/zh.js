@@ -191,6 +191,7 @@ const zh = {
     notifyDenied: '已拒绝',
     notifyDefault: '未授权',
     notifyDeniedTip: '请在浏览器设置中允许通知权限',
+    notifyPwaDeniedTip: '请在系统设置-应用中找到 Santex Mail 然后手动允许通知',
     notifyIosTip: 'iOS 设备请点击分享，添加到主屏幕，然后打开后即可使用系统通知功能',
     manageSigInMain: '请在主窗口的新邮件处管理签名',
     enableNotification: '开启通知',

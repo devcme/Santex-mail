@@ -25,10 +25,11 @@
           <el-button v-if="notifyPermissionVal === 'default'" size="small" type="primary" @click="grantNotification" style="width: 100%; margin-top: 8px;">
             {{ $t('enableNotification') }}
           </el-button>
-          <div v-else-if="notifyPermissionVal === 'denied'" class="notify-denied-tip">
-            {{ $t('notifyDeniedTip') }}
+          <div v-if="notifyPermissionVal === 'denied'" class="notify-denied-tip">
+            <template v-if="iOSDevice && standalone">{{ $t('notifyPwaDeniedTip') }}</template>
+            <template v-else>{{ $t('notifyDeniedTip') }}</template>
           </div>
-          <div v-if="iOSDevice" class="notify-ios-tip">
+          <div v-if="iOSDevice && !standalone" class="notify-ios-tip">
             {{ $t('notifyIosTip') }}
           </div>
         </div>
@@ -105,7 +106,7 @@ import {useSettingStore} from "@/store/setting.js";
 import {hasPerm} from "@/perm/perm.js"
 import {useI18n} from "vue-i18n";
 import {setExtend} from "@/utils/day.js"
-import { notifyPermission as getNotifyPermission, requestNotifyPermission, notifySupported, isIOS } from "@/utils/notify.js"
+import { notifyPermission as getNotifyPermission, requestNotifyPermission, notifySupported, isIOS, isPWA } from "@/utils/notify.js"
 
 const {t} = useI18n();
 const route = useRoute();
@@ -118,6 +119,7 @@ const userinfoRef = ref({})
 const notifyPopoverShow = ref(false)
 const notifyPermissionVal = ref(notifySupported() ? Notification.permission : 'denied')
 const iOSDevice = ref(isIOS())
+const standalone = ref(isPWA())
 const notifyPopoverPlacement = computed(() => {
   return window.innerWidth < 768 ? 'bottom-end' : 'bottom'
 })

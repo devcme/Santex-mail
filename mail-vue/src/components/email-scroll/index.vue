@@ -1414,6 +1414,8 @@ ul {
   .email-text-skeleton .text-skeleton-one { width: 40% !important; }
   .email-status { flex-direction: row !important; gap: 5px !important; }
   .title { padding-right: 15px; }
+  .email-sender .name { grid-template-columns: auto 1fr !important; gap: 5px !important; }
+  .email-sender .name > span:last-child { display: flex !important; align-items: center !important; }
 }
 
 </style>

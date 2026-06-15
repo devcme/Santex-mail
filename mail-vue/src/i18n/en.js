@@ -191,6 +191,7 @@ const en = {
     notifyDenied: 'Denied',
     notifyDefault: 'Not granted',
     notifyDeniedTip: 'Please allow notification permission in your browser settings',
+    notifyPwaDeniedTip: 'Go to System Settings > Apps > Santex Mail and manually enable notifications.',
     notifyIosTip: 'On iOS, tap Share, then Add to Home Screen. Open from the home screen icon to enable system notifications.',
     manageSigInMain: 'Manage signatures in the main window\'s compose panel',
     enableNotification: 'Enable Notification',
