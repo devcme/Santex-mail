@@ -5,30 +5,112 @@
       <el-button size="small" @click="refresh" :loading="loading">{{ $t('refresh') }}</el-button>
     </div>
 
-    <div class="storage-cards">
-      <div class="storage-card" v-for="card in cards" :key="card.key">
+    <div class="binding-warn" v-if="hasBindingErrors">
+      <template v-if="d1Data.binding === 'missing'">D1 binding missing | </template>
+      <template v-if="kvData.binding === 'missing'">KV binding missing | </template>
+      <template v-if="r2Data.binding === 'missing'">R2 binding missing</template>
+    </div>
+
+    <div class="storage-cards" v-if="dataReady">
+      <div class="storage-card">
         <div class="card-header">
-          <span class="card-title">{{ card.title }}</span>
+          <span class="card-title">D1 Database</span>
           <el-popover placement="bottom" :width="280" trigger="hover">
             <template #reference>
               <Icon icon="mingcute:information-line" width="18" class="info-icon"/>
             </template>
             <div class="pricing-pop">
-              <div class="pp-title">{{ card.title }} Cloudflare</div>
-              <div class="pp-row" v-for="p in card.pricing" :key="p.label">
-                <span>{{ p.label }}</span><span>{{ p.value }}</span>
-              </div>
+              <div class="pp-title">D1 Cloudflare</div>
+              <div class="pp-row"><span>{{ $t('storagePrice') }}</span><span>$0.75/GB-mo</span></div>
+              <div class="pp-row"><span>Rows read/write</span><span>Free</span></div>
               <el-divider />
-              <div class="pp-row"><span>{{ $t('freeTier') }}</span><span>{{ card.freeTier }}</span></div>
+              <div class="pp-row"><span>{{ $t('freeTier') }}</span><span>5 GB</span></div>
             </div>
           </el-popover>
         </div>
         <div class="card-body">
-          <div class="ring-chart" :ref="el => setChartRef(card.key, el)"></div>
+          <div class="ring-chart" ref="d1ChartRef"></div>
           <div class="card-stats">
-            <div class="stat-line" v-for="s in card.stats" :key="s.label">
-              <span class="stat-label">{{ s.label }}</span>
-              <span class="stat-value">{{ s.value }}</span>
+            <div class="stat-line" v-for="t in (d1Data.tables || [])" :key="t.table">
+              <span class="stat-label">{{ t.table }}</span>
+              <span class="stat-value">{{ (t.count || 0).toLocaleString() }}</span>
+            </div>
+            <div class="stat-line"><span class="stat-label">Total rows</span><span class="stat-value">{{ (d1Data.totalRows || 0).toLocaleString() }}</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="storage-card">
+        <div class="card-header">
+          <span class="card-title">KV Storage</span>
+          <el-popover placement="bottom" :width="280" trigger="hover">
+            <template #reference>
+              <Icon icon="mingcute:information-line" width="18" class="info-icon"/>
+            </template>
+            <div class="pricing-pop">
+              <div class="pp-title">KV Cloudflare</div>
+              <div class="pp-row"><span>{{ $t('readPrice') }}</span><span>$0.50/million</span></div>
+              <div class="pp-row"><span>{{ $t('writePrice') }}</span><span>$5.00/million</span></div>
+              <div class="pp-row"><span>{{ $t('storagePrice') }}</span><span>$0.50/GB-mo</span></div>
+              <el-divider />
+              <div class="pp-row"><span>{{ $t('freeTier') }}</span><span>100K reads/day</span></div>
+            </div>
+          </el-popover>
+        </div>
+        <div class="card-body">
+          <div class="ring-chart" ref="kvChartRef"></div>
+          <div class="card-stats">
+            <div class="stat-line">
+              <span class="stat-label">{{ $t('keyCount') }}</span>
+              <span class="stat-value">{{ (kvData.keyCount || 0).toLocaleString() }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="storage-card">
+        <div class="card-header">
+          <span class="card-title">R2 Storage</span>
+          <el-popover placement="bottom" :width="280" trigger="hover">
+            <template #reference>
+              <Icon icon="mingcute:information-line" width="18" class="info-icon"/>
+            </template>
+            <div class="pricing-pop">
+              <div class="pp-title">R2 Cloudflare</div>
+              <div class="pp-row"><span>{{ $t('storagePrice') }}</span><span>$0.015/GB-mo</span></div>
+              <div class="pp-row"><span>{{ $t('classAOps') }}</span><span>$4.50/million</span></div>
+              <div class="pp-row"><span>{{ $t('classBOps') }}</span><span>$0.36/million</span></div>
+              <el-divider />
+              <div class="pp-row"><span>{{ $t('freeTier') }}</span><span>10 GB</span></div>
+            </div>
+          </el-popover>
+        </div>
+        <div class="card-body">
+          <div class="ring-chart" ref="r2ChartRef"></div>
+          <div class="card-stats">
+            <div class="stat-line">
+              <span class="stat-label">{{ $t('objectCount') }}</span>
+              <span class="stat-value">{{ (r2Data.objectCount || 0).toLocaleString() }}</span>
+            </div>
+            <div class="stat-line">
+              <span class="stat-label">Attachments</span>
+              <span class="stat-value">{{ r2Data.typeStats?.attachments || 0 }} ({{ fmtBytes(r2Data.typeStats?.attachmentsSize) }})</span>
+            </div>
+            <div class="stat-line">
+              <span class="stat-label">Images</span>
+              <span class="stat-value">{{ r2Data.typeStats?.images || 0 }} ({{ fmtBytes(r2Data.typeStats?.imagesSize) }})</span>
+            </div>
+            <div class="stat-line">
+              <span class="stat-label">Backgrounds</span>
+              <span class="stat-value">{{ r2Data.typeStats?.backgrounds || 0 }} ({{ fmtBytes(r2Data.typeStats?.backgroundsSize) }})</span>
+            </div>
+            <div class="stat-line">
+              <span class="stat-label">{{ $t('other') }}</span>
+              <span class="stat-value">{{ r2Data.typeStats?.other || 0 }} ({{ fmtBytes(r2Data.typeStats?.otherSize) }})</span>
+            </div>
+            <div class="stat-line">
+              <span class="stat-label">{{ $t('totalSize') }}</span>
+              <span class="stat-value">{{ fmtBytes(r2Data.totalSize) }}</span>
             </div>
           </div>
         </div>
@@ -40,7 +122,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from "vue";
+import { ref, onMounted, nextTick } from "vue";
 import { Icon } from "@iconify/vue";
 import { useI18n } from "vue-i18n";
 import { storageStats } from "@/request/storage.js";
@@ -51,13 +133,14 @@ const { t } = useI18n()
 
 const loading = ref(false)
 const dataReady = ref(false)
-const d1Data = ref({ tables: [], totalRows: 0, billingBytes: 0 })
-const kvData = ref({ keyCount: 0, billingBytes: 0 })
-const r2Data = ref({ objectCount: 0, totalSize: 0, typeStats: null, billingBytes: 0 })
+const d1ChartRef = ref(null), kvChartRef = ref(null), r2ChartRef = ref(null)
+let d1Chart = null, kvChart = null, r2Chart = null
 
-const chartRefs = {}
-let charts = {}
-function setChartRef(key, el) { if (el) chartRefs[key] = el }
+const d1Data = ref({ tables: [], totalRows: 0 })
+const kvData = ref({ keyCount: 0 })
+const r2Data = ref({ objectCount: 0, totalSize: 0, typeStats: null })
+
+const hasBindingErrors = ref(false)
 
 function fmtBytes(bytes) {
   if (!bytes || bytes === 0) return '0 B'
@@ -67,113 +150,61 @@ function fmtBytes(bytes) {
   return (bytes / 1073741824).toFixed(3) + ' GB'
 }
 
-const cards = computed(() => {
-  const d1 = d1Data.value, kv = kvData.value, r2 = r2Data.value
-  const d1Used = fmtBytes(d1.billingBytes)
-  const r2Used = fmtBytes(r2.totalSize)
-
-  return [
-    {
-      key: 'd1', title: 'D1 Database',
-      chartData: (d1.tables || []).filter(t => t && t.table && t.count != null).map(t => ({ name: t.table, value: t.count })),
-      centerText: (d1.totalRows || 0).toLocaleString() + '\nrows',
-      stats: [
-        ...(d1.tables || []).filter(t => t).map(t => ({ label: t.table, value: (t.count || 0).toLocaleString() })),
-        { label: t('totalSize') + ' (billing)', value: d1Used }
-      ],
-      pricing: [
-        { label: t('storagePrice'), value: '$0.75/GB-mo' },
-        { label: 'Rows read', value: 'Free' },
-        { label: 'Rows written', value: 'Free' }
-      ],
-      freeTier: '5 GB'
-    },
-    {
-      key: 'kv', title: 'KV Storage',
-      chartData: [{ name: 'Keys', value: kv.keyCount || 0 }],
-      centerText: (kv.keyCount || 0).toLocaleString() + '\nkeys',
-      stats: [
-        { label: t('keyCount'), value: (kv.keyCount || 0).toLocaleString() },
-        { label: t('totalSize') + ' (billing)', value: fmtBytes(kv.billingBytes) }
-      ],
-      pricing: [
-        { label: t('readPrice'), value: '$0.50/million' },
-        { label: t('writePrice'), value: '$5.00/million' },
-        { label: t('storagePrice'), value: '$0.50/GB-mo' }
-      ],
-      freeTier: '100K reads/day, 1GB'
-    },
-    {
-      key: 'r2', title: 'R2 Storage',
-      chartData: [
-        { name: 'Attachments', value: r2.typeStats?.attachments || 0 },
-        { name: 'Images', value: r2.typeStats?.images || 0 },
-        { name: 'Other', value: r2.typeStats?.other || 0 }
-      ],
-      centerText: r2Used,
-      stats: [
-        { label: t('objectCount'), value: (r2.objectCount || 0).toLocaleString() },
-        { label: '📎 Attachments', value: (r2.typeStats?.attachments || 0) + ' (' + fmtBytes(r2.typeStats?.attachmentsSize) + ')' },
-        { label: '🖼 Images', value: (r2.typeStats?.images || 0) + ' (' + fmtBytes(r2.typeStats?.imagesSize) + ')' },
-        { label: '🖼 Backgrounds', value: (r2.typeStats?.backgrounds || 0) + ' (' + fmtBytes(r2.typeStats?.backgroundsSize) + ')' },
-        { label: t('other'), value: (r2.typeStats?.other || 0) + ' (' + fmtBytes(r2.typeStats?.otherSize) + ')' },
-        { label: t('totalSize'), value: r2Used }
-      ],
-      pricing: [
-        { label: t('storagePrice'), value: '$0.015/GB-mo' },
-        { label: t('classAOps'), value: '$4.50/million' },
-        { label: t('classBOps'), value: '$0.36/million' }
-      ],
-      freeTier: '10 GB'
-    }
-  ]
-})
-
-const bgColor = computed(() => {
-  return document.documentElement.classList.contains('dark') ? '#1d1e1f' : '#ffffff'
-})
-const textColor = computed(() => {
-  return document.documentElement.classList.contains('dark') ? '#E5EAF3' : '#303133'
-})
-
-function renderCharts() {
-  nextTick(() => {
-    cards.value.forEach(card => {
-      const el = chartRefs[card.key]
-      if (!el) return
-      if (charts[card.key]) charts[card.key].dispose()
-      const chart = echarts.init(el)
-      charts[card.key] = chart
-      chart.setOption({
-        tooltip: { trigger: 'item', formatter: p => `${p.name}: ${p.value} (${p.percent}%)` },
-        series: [{
-          type: 'pie',
-          radius: ['50%', '75%'],
-          center: ['50%', '50%'],
-          avoidLabelOverlap: false,
-          label: { show: false },
-          emphasis: { label: { show: true, fontWeight: 'bold' } },
-          data: card.chartData.length ? card.chartData : [{ name: '-', value: 1 }],
-          color: card.key === 'd1' ? ['#409EFF','#79bbff','#a0cfff','#c6e2ff','#ecf5ff'] :
-                 card.key === 'kv' ? ['#67C23A','#95d475','#b3e19d','#c2e7b0','#e1f3d8'] :
-                 ['#E6A23C','#ebb563','#f0c78a','#f5dab1','#faecd8']
-        }]
-      })
-    })
+function makeRingChart(el, data, color) {
+  if (!el || !data.length) return
+  const chart = echarts.init(el)
+  chart.setOption({
+    tooltip: { trigger: 'item', formatter: p => `${p.name}: ${p.value} (${p.percent}%)` },
+    series: [{
+      type: 'pie', radius: ['50%', '75%'], center: ['50%', '50%'],
+      avoidLabelOverlap: false, label: { show: false },
+      emphasis: { label: { show: true } },
+      data, color
+    }]
   })
+  return chart
 }
 
-onMounted(() => { refresh() })
+onMounted(() => refresh())
 
 async function refresh() {
   loading.value = true
   try {
     const res = await storageStats()
-    d1Data.value = res.d1 || { tables: [], totalRows: 0 }
-    kvData.value = res.kv || { keyCount: 0 }
-    r2Data.value = res.r2 || { objectCount: 0, totalSize: 0 }
+    d1Data.value = res.d1 || {}
+    kvData.value = res.kv || {}
+    r2Data.value = res.r2 || {}
+
+    const errs = [d1Data.value.binding === 'missing', kvData.value.binding === 'missing', r2Data.value.binding === 'missing']
+    hasBindingErrors.value = errs.some(Boolean)
+
     dataReady.value = true
-    renderCharts()
+
+    await nextTick()
+    await nextTick() // double nextTick to ensure DOM ready
+
+    if (d1Chart) d1Chart.dispose()
+    if (d1ChartRef.value) {
+      const tables = (d1Data.value.tables || []).filter(t => t.count > 0)
+      d1Chart = makeRingChart(d1ChartRef.value, tables.map(t => ({ name: t.table, value: t.count })), ['#409EFF','#79bbff','#a0cfff','#c6e2ff','#ecf5ff','#b3d8ff','#d4e8ff'])
+    }
+
+    if (kvChart) kvChart.dispose()
+    if (kvChartRef.value) {
+      kvChart = makeRingChart(kvChartRef.value, [{ name: 'Keys', value: kvData.value.keyCount || 0 }], ['#67C23A','#95d475'])
+    }
+
+    if (r2Chart) r2Chart.dispose()
+    if (r2ChartRef.value && r2Data.value.typeStats) {
+      const ts = r2Data.value.typeStats
+      r2Chart = makeRingChart(r2ChartRef.value, [
+        { name: 'Attachments', value: ts.attachments || 0 },
+        { name: 'Images', value: ts.images || 0 },
+        { name: 'Backgrounds', value: ts.backgrounds || 0 },
+        { name: 'Other', value: ts.other || 0 }
+      ].filter(d => d.value > 0), ['#E6A23C','#ebb563','#f0c78a','#f5dab1'])
+    }
+
   } catch (e) {
     console.error('Failed to load storage stats:', e)
   } finally {
@@ -187,6 +218,7 @@ async function refresh() {
 .storage-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;
   h2 { margin: 0; font-size: 20px; }
 }
+.binding-warn { background: var(--el-color-warning-light-9); color: var(--el-color-warning); padding: 8px 14px; border-radius: 6px; margin-bottom: 14px; font-size: 13px; }
 .storage-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 20px; }
 .storage-card { background: var(--el-bg-color); border:1px solid var(--el-border-color-light); border-radius: 8px; padding: 20px; }
 .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;

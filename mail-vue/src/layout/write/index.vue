@@ -563,12 +563,15 @@ function openReplyAll(email) {
   resetForm();
   email.subject = email.subject || ''
 
+  const selfEmail = accountStore.currentAccount?.email || userStore.user?.email || ''
   const allRecipients = new Set()
-  allRecipients.add(email.sendEmail)
+  if (email.sendEmail !== selfEmail) {
+    allRecipients.add(email.sendEmail)
+  }
   try {
     const recipients = JSON.parse(email.recipient || '[]')
     recipients.forEach(r => {
-      if (r.address && r.address !== form.sendEmail) {
+      if (r.address && r.address !== selfEmail) {
         allRecipients.add(r.address)
       }
     })

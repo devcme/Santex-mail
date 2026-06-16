@@ -188,12 +188,15 @@ onMounted(() => {
           </blockquote>`
         }, 200)
       } else if (mode === 'replyAll' && email) {
+        const selfEmail = form.sendEmail || ''
         const allRecipients = new Set()
-        allRecipients.add(email.sendEmail)
+        if (email.sendEmail !== selfEmail) {
+          allRecipients.add(email.sendEmail)
+        }
         try {
           const recipients = JSON.parse(email.recipient || '[]')
           recipients.forEach(r => {
-            if (r.address && r.address !== form.sendEmail) {
+            if (r.address && r.address !== selfEmail) {
               allRecipients.add(r.address)
             }
           })
