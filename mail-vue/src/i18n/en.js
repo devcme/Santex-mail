@@ -385,7 +385,8 @@ const en = {
     operations: 'Operations',
     storageUsage: 'Storage Usage',
     dataDelayNote: 'Data delayed 5-15 minutes, not real-time',
-    noApiToken: 'Set CF_API_TOKEN and CF_ACCOUNT_ID secrets in Worker to view storage stats'
+    noApiToken: 'Set CF_API_TOKEN and CF_ACCOUNT_ID secrets in Worker to view storage stats',
+    other: 'Other'
 }
 
 export default en

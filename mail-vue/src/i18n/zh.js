@@ -385,6 +385,7 @@ const zh = {
     operations: '操作次数',
     storageUsage: '存储用量',
     dataDelayNote: '统计延迟5-15分钟，非实时数据',
-    noApiToken: '请在 Worker 中设置 CF_API_TOKEN 和 CF_ACCOUNT_ID 密钥以查看存储统计'
+    noApiToken: '请在 Worker 中设置 CF_API_TOKEN 和 CF_ACCOUNT_ID 密钥以查看存储统计',
+    other: '其他'
 }
 export default zh
