@@ -124,12 +124,12 @@ const allMenuItems = computed(() => [
   { index: 'setting', label: t('settings'), icon: 'fluent:settings-48-regular', perm: null },
   { index: '_divider_', label: '', icon: '', perm: 'any:manage' },
   { index: 'analysis', label: t('analytics'), icon: 'fluent:data-pie-20-regular', perm: 'analysis:query' },
+  { index: 'storage', label: t('storageManagement'), icon: 'mdi:database-cog-outline', perm: 'storage:query' },
   { index: 'user', label: t('allUsers'), icon: 'si:user-alt-2-line', perm: 'user:query' },
   { index: 'all-email', label: t('allMail'), icon: 'fluent:mail-list-28-regular', perm: 'all-email:query' },
   { index: 'role', label: t('permissions'), icon: 'fluent:lock-closed-16-regular', perm: 'role:query' },
   { index: 'reg-key', label: t('inviteCode'), icon: 'fluent:fingerprint-20-filled', perm: 'reg-key:query' },
   { index: 'sys-setting', label: t('SystemSettings'), icon: 'eos-icons:system-ok-outlined', perm: 'setting:query' },
-  { index: 'storage', label: t('storageManagement'), icon: 'mdi:database-cog-outline', perm: 'storage:query' },
 ])
 
 const managePerms = ['all-email:query','user:query','role:query','setting:query','analysis:query','reg-key:query','storage:query']

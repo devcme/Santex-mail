@@ -113,8 +113,9 @@ const cards = computed(() => {
       centerText: r2Used,
       stats: [
         { label: t('objectCount'), value: (r2.objectCount || 0).toLocaleString() },
-        { label: '📎 ' + 'Attachments', value: (r2.typeStats?.attachments || 0) + ' (' + fmtBytes(r2.typeStats?.attachmentsSize) + ')' },
-        { label: '🖼 ' + 'Images', value: (r2.typeStats?.images || 0) + ' (' + fmtBytes(r2.typeStats?.imagesSize) + ')' },
+        { label: '📎 Attachments', value: (r2.typeStats?.attachments || 0) + ' (' + fmtBytes(r2.typeStats?.attachmentsSize) + ')' },
+        { label: '🖼 Images', value: (r2.typeStats?.images || 0) + ' (' + fmtBytes(r2.typeStats?.imagesSize) + ')' },
+        { label: '🖼 Backgrounds', value: (r2.typeStats?.backgrounds || 0) + ' (' + fmtBytes(r2.typeStats?.backgroundsSize) + ')' },
         { label: t('other'), value: (r2.typeStats?.other || 0) + ' (' + fmtBytes(r2.typeStats?.otherSize) + ')' },
         { label: t('totalSize'), value: r2Used }
       ],

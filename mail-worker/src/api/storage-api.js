@@ -8,7 +8,7 @@ app.get('/storage/stats', async (c) => {
 	const data = {};
 
 	// D1 stats via direct DB
-	const d1Tables = ['email', 'account', 'user', 'role', 'star', 'setting', 'reg_key', 'verify_record'];
+	const d1Tables = ['email', 'account', 'user', 'role', 'star', 'setting', 'reg_key', 'verify_record', 'perm', 'role_perm', 'attachments', 'oauth'];
 	try {
 		const db = env.db || env.DB;
 		const tableStats = [];
@@ -53,7 +53,7 @@ app.get('/storage/stats', async (c) => {
 		const r2 = env.r2 || env.R2 || env.r2_bucket;
 		if (r2) {
 			let objectCount = 0, totalSize = 0, cursor = undefined;
-			const typeStats = { images: 0, attachments: 0, other: 0, imagesSize: 0, attachmentsSize: 0, otherSize: 0 };
+			const typeStats = { images: 0, attachments: 0, other: 0, imagesSize: 0, attachmentsSize: 0, otherSize: 0, backgrounds: 0, backgroundsSize: 0 };
 			const imageExts = ['png','jpg','jpeg','gif','webp','svg','ico','bmp'];
 			do {
 				const res = await r2.list({ cursor, limit: 1000 });
@@ -63,9 +63,12 @@ app.get('/storage/stats', async (c) => {
 					totalSize += size;
 					const key = obj.key || '';
 					const ext = key.split('.').pop()?.toLowerCase();
-					if (key.startsWith('att/') || key.startsWith('attachment/')) {
+					if (key.startsWith('attachments/')) {
 						typeStats.attachments++;
 						typeStats.attachmentsSize += size;
+					} else if (key.startsWith('static/background/')) {
+						typeStats.backgrounds++;
+						typeStats.backgroundsSize += size;
 					} else if (imageExts.includes(ext)) {
 						typeStats.images++;
 						typeStats.imagesSize += size;

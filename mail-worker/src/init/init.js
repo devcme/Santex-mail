@@ -464,6 +464,14 @@ const dbInit = {
 
 		await c.env.db.prepare(`UPDATE perm SET perm_key = 'setting:clean' WHERE perm_key = 'seting:clear'`).run();
 		await c.env.db.prepare(`DELETE FROM perm WHERE perm_key = 'user:star'`).run();
+
+		// v3_1: add storage permission
+		const storagePerm = await c.env.db.prepare(`SELECT perm_id FROM perm WHERE perm_key = 'storage:query'`).first();
+		if (!storagePerm) {
+			const maxPermId = await c.env.db.prepare(`SELECT MAX(perm_id) as mx FROM perm`).first();
+			const nextId = (maxPermId?.mx || 30) + 1;
+			await c.env.db.prepare(`INSERT INTO perm (perm_id, name, perm_key, pid, type, sort) VALUES (?, '存储管理', 'storage:query', 0, 1, 8)`).bind(nextId).run();
+		}
 		// 创建 role 表并插入默认身份
 		await c.env.db.prepare(`
       CREATE TABLE IF NOT EXISTS role (
