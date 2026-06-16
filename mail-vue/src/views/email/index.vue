@@ -61,6 +61,7 @@
         :del-type="'logic'"
         @close="closeDetail"
         @reply="openReply"
+        @replyAll="openReplyAll"
         @forward="openForward"
         @delete="handleDetailDelete"
         @star-change="onStarChange"
@@ -139,6 +140,10 @@ function onDblClick(email) {
 
 function openReply(email) {
   uiStore.writerRef.openReply(email)
+}
+
+function openReplyAll(email) {
+  uiStore.writerRef.openReplyAll(email)
 }
 
 function openForward(email) {

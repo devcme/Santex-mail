@@ -129,9 +129,10 @@ const allMenuItems = computed(() => [
   { index: 'role', label: t('permissions'), icon: 'fluent:lock-closed-16-regular', perm: 'role:query' },
   { index: 'reg-key', label: t('inviteCode'), icon: 'fluent:fingerprint-20-filled', perm: 'reg-key:query' },
   { index: 'sys-setting', label: t('SystemSettings'), icon: 'eos-icons:system-ok-outlined', perm: 'setting:query' },
+  { index: 'storage', label: t('storageManagement'), icon: 'mdi:database-cog-outline', perm: 'storage:query' },
 ])
 
-const managePerms = ['all-email:query','user:query','role:query','setting:query','analysis:query','reg-key:query']
+const managePerms = ['all-email:query','user:query','role:query','setting:query','analysis:query','reg-key:query','storage:query']
 
 const menuItems = computed(() => {
   return allMenuItems.value.filter(item => {

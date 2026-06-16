@@ -8,6 +8,7 @@
         <Icon class="icon" @click="changeStar" v-else icon="solar:star-line-duotone" width="18" height="18"/>
       </span>
       <Icon class="icon" v-if="showReply" @click="handleReply" @dblclick="handleDblReply" icon="la:reply" width="21" height="21" />
+      <Icon class="icon" v-if="showReply" @click="handleReplyAll" @dblclick="handleDblReplyAll" icon="mdi:reply-all-outline" width="20" height="20" />
       <Icon class="icon" v-if="showReply" @click="handleForward" @dblclick="handleDblForward" icon="iconoir:arrow-up-right" width="20" height="20" />
       <div class="toolbar-spacer"></div>
       <template v-if="uiStore.dark">
@@ -121,7 +122,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['close', 'reply', 'forward', 'delete', 'star-change'])
+const emit = defineEmits(['close', 'reply', 'replyAll', 'forward', 'delete', 'star-change'])
 
 const settingStore = useSettingStore();
 const emailStore = useEmailStore();
@@ -164,6 +165,36 @@ function handleDblReply() {
   }
   localStorage.setItem('compose-data', JSON.stringify({
     composeMode: 'reply',
+    email: JSON.parse(JSON.stringify(props.email))
+  }))
+  const url = `${window.location.origin}/compose`
+  const win = window.open(url, '_blank', 'width=900,height=750')
+  if (win) {
+    win.focus()
+  }
+}
+
+let replyAllTimer = null
+
+function handleReplyAll() {
+  if (replyAllTimer) {
+    clearTimeout(replyAllTimer)
+    replyAllTimer = null
+    return
+  }
+  replyAllTimer = setTimeout(() => {
+    replyAllTimer = null
+    emit('replyAll', props.email)
+  }, 200)
+}
+
+function handleDblReplyAll() {
+  if (replyAllTimer) {
+    clearTimeout(replyAllTimer)
+    replyAllTimer = null
+  }
+  localStorage.setItem('compose-data', JSON.stringify({
+    composeMode: 'replyAll',
     email: JSON.parse(JSON.stringify(props.email))
   }))
   const url = `${window.location.origin}/compose`

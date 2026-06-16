@@ -358,7 +358,22 @@ const en = {
     searchUser: 'Search by user',
     searchEmail: 'Search by Email',
     searchSender: 'Search by Sender',
-    userEmail: 'Email Address'
+    userEmail: 'Email Address',
+    storageManagement: 'Storage',
+    cloudflarePricing: 'Cloudflare Pricing',
+    storagePrice: 'Storage Price',
+    classAOps: 'Class A (write)',
+    classBOps: 'Class B (read)',
+    readPrice: 'Read Price',
+    writePrice: 'Write Price',
+    freeTier: 'Free Tier',
+    keyCount: 'Key Count',
+    objectCount: 'Object Count',
+    totalSize: 'Total Size',
+    storageUsed: 'Storage Used',
+    d1ReadPricing: 'Reads included in free tier',
+    d1WritePricing: 'Included in row quota',
+    refresh: 'Refresh'
 }
 
 export default en

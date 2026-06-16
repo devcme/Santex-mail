@@ -110,6 +110,8 @@ function checkComposeAction() {
     localStorage.removeItem('compose-action')
     if (data.type === 'reply' && data.email) {
       uiStore.writerRef.openReply(data.email)
+    } else if (data.type === 'replyAll' && data.email) {
+      uiStore.writerRef.openReplyAll(data.email)
     } else if (data.type === 'forward' && data.email) {
       uiStore.writerRef.openForward(data.email)
     }

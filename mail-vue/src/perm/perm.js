@@ -118,5 +118,15 @@ const routers = {
             name: 'analysis',
             menu: true
         }
+    }],
+    'storage:query': [{
+        path: '/storage',
+        name: 'storage',
+        component: () => import('@/views/storage/index.vue'),
+        meta: {
+            title: 'storageManagement',
+            name: 'storage',
+            menu: true
+        }
     }]
 }

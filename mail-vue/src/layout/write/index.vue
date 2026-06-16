@@ -172,6 +172,7 @@ defineExpose({
   open,
   openNew,
   openReply,
+  openReplyAll,
   openForward,
   openDraft
 })
@@ -556,6 +557,55 @@ function openReply(email) {
     })
   })
 
+}
+
+function openReplyAll(email) {
+  resetForm();
+  email.subject = email.subject || ''
+
+  const allRecipients = new Set()
+  allRecipients.add(email.sendEmail)
+  try {
+    const recipients = JSON.parse(email.recipient || '[]')
+    recipients.forEach(r => {
+      if (r.address && r.address !== form.sendEmail) {
+        allRecipients.add(r.address)
+      }
+    })
+  } catch (e) {}
+  form.receiveEmail = [...allRecipients]
+
+  form.subject = (
+      email.subject.startsWith('Re:') ||
+      email.subject.startsWith('Re：') ||
+      email.subject.startsWith('回复：') ||
+      email.subject.startsWith('回复:')) ? email.subject : 'Re: ' + email.subject
+  form.sendType = 'reply'
+  form.emailId = email.emailId
+
+  defValue.value = ''
+
+  setTimeout(() => {
+    defValue.value = `
+    <div></div>
+    <div>
+    <br>
+        ${formatDetailDate(email.createTime)} ${email.name} &lt${email.sendEmail}&gt ${t('wrote')}:
+    </div>
+    <blockquote class="mceNonEditable" style="margin: 0 0 0 0.8ex;border-left: 1px solid rgb(204,204,204);padding-left: 1ex;">
+      <articl>
+          ${formatImage(email.content) || `<pre style="font-family: inherit;word-break: break-word;white-space: pre-wrap;margin: 0">${email.text}</pre>`}
+      </article>
+    </blockquote>`
+    open()
+
+    nextTick(() => {
+      backReply.content = editor.value.getContent()
+      backReply.subject = form.subject
+      backReply.receiveEmail = form.receiveEmail
+      backReply.sendType = form.sendType
+    })
+  })
 }
 
 function formatImage(content) {

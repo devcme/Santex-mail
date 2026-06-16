@@ -358,6 +358,21 @@ const zh = {
     searchUser: '搜索用户',
     searchEmail: '搜索邮箱',
     searchSender: '搜索发件人',
-    userEmail: '用户邮箱'
+    userEmail: '用户邮箱',
+    storageManagement: '存储管理',
+    cloudflarePricing: 'Cloudflare 定价',
+    storagePrice: '存储价格',
+    classAOps: 'A类操作（写入）',
+    classBOps: 'B类操作（读取）',
+    readPrice: '读取价格',
+    writePrice: '写入价格',
+    freeTier: '免费额度',
+    keyCount: '键数量',
+    objectCount: '对象数量',
+    totalSize: '总大小',
+    storageUsed: '已用存储',
+    d1ReadPricing: '读取包含在免费额度',
+    d1WritePricing: '包含在行读写限额',
+    refresh: '刷新'
 }
 export default zh

@@ -187,6 +187,38 @@ onMounted(() => {
             </article>
           </blockquote>`
         }, 200)
+      } else if (mode === 'replyAll' && email) {
+        const allRecipients = new Set()
+        allRecipients.add(email.sendEmail)
+        try {
+          const recipients = JSON.parse(email.recipient || '[]')
+          recipients.forEach(r => {
+            if (r.address && r.address !== form.sendEmail) {
+              allRecipients.add(r.address)
+            }
+          })
+        } catch (e) {}
+        form.receiveEmail = [...allRecipients]
+        form.subject = (email.subject && (
+          email.subject.startsWith('Re:') ||
+          email.subject.startsWith('Re：') ||
+          email.subject.startsWith('回复：') ||
+          email.subject.startsWith('回复:'))) ? email.subject : 'Re: ' + (email.subject || '')
+        form.sendType = 'reply'
+        form.emailId = email.emailId
+        setTimeout(() => {
+          defValue.value = `
+          <div></div>
+          <div>
+          <br>
+              ${formatDetailDate(email.createTime)} ${email.name} &lt${email.sendEmail}&gt ${t('wrote')}:
+          </div>
+          <blockquote class="mceNonEditable" style="margin: 0 0 0 0.8ex;border-left: 1px solid rgb(204,204,204);padding-left: 1ex;">
+            <article>
+                ${formatImage(email.content) || `<pre style="font-family: inherit;word-break: break-word;white-space: pre-wrap;margin: 0">${email.text}</pre>`}
+            </article>
+          </blockquote>`
+        }, 200)
       } else if (mode === 'forward' && email) {
         form.subject = email.subject || ''
         form.sendType = 'forward'

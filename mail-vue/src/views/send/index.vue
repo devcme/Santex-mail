@@ -59,6 +59,7 @@
         :show-delete="false"
         @close="closeDetail"
         @reply="openReply"
+        @replyAll="openReplyAll"
         @forward="openForward"
         @star-change="onStarChange"
       />
@@ -121,6 +122,7 @@ function onDblClick(email) {
 }
 
 function openReply(email) { uiStore.writerRef.openReply(email) }
+function openReplyAll(email) { uiStore.writerRef.openReplyAll(email) }
 function openForward(email) { uiStore.writerRef.openForward(email) }
 
 function onStarChange(email) {

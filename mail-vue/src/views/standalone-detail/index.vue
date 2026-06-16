@@ -10,6 +10,7 @@
       :del-type="contentData.delType ?? 'logic'"
       @close="handleClose"
       @reply="handleReply"
+      @replyAll="handleReplyAll"
       @forward="handleForward"
       @star-change="onStarChange"
     />
@@ -52,6 +53,17 @@ function handleClose() {
 function handleReply(emailData) {
   localStorage.setItem('compose-action', JSON.stringify({
     type: 'reply',
+    email: JSON.parse(JSON.stringify(emailData))
+  }))
+  if (window.opener && !window.opener.closed) {
+    window.opener.postMessage({ type: 'compose-action' }, window.location.origin)
+  }
+  setTimeout(() => window.close(), 80)
+}
+
+function handleReplyAll(emailData) {
+  localStorage.setItem('compose-action', JSON.stringify({
+    type: 'replyAll',
     email: JSON.parse(JSON.stringify(emailData))
   }))
   if (window.opener && !window.opener.closed) {
