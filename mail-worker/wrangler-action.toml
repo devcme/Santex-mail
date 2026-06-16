@@ -38,6 +38,8 @@ crons = ["0 16 * * *"]
 [vars]
 ai_model = "${AI_MODEL}"
 analysis_cache = "${ANALYSIS_CACHE}"
+CF_ACCOUNT_ID = "${CF_ACCOUNT_ID}"
+CF_API_TOKEN = "${CF_API_TOKEN}"
 #orm_log = false
 domain = "${DOMAIN}"
 admin = "${ADMIN}"
