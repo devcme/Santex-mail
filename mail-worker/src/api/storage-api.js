@@ -16,15 +16,15 @@ app.get('/storage/stats', async (c) => {
 			for (const table of d1Tables) {
 				try {
 					const row = db.prepare(`SELECT COUNT(*) as cnt FROM "${table}"`).first();
-					tableStats.push({ table, count: row ? row.cnt : 0 });
+					tableStats.push({ table, count: row ? (row.cnt || 0) : 0 });
 				} catch (e) {
-					// table might not exist
+					tableStats.push({ table, count: 0 });
 				}
 			}
 		}
 		data.d1 = {
 			tables: tableStats,
-			totalRows: tableStats.reduce((s, t) => s + t.count, 0)
+			totalRows: tableStats.reduce((s, t) => s + (t.count || 0), 0)
 		};
 	} catch (e) {
 		data.d1 = { tables: [], totalRows: 0, error: e.message };
