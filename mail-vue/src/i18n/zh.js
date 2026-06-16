@@ -373,6 +373,18 @@ const zh = {
     storageUsed: '已用存储',
     d1ReadPricing: '读取包含在免费额度',
     d1WritePricing: '包含在行读写限额',
-    refresh: '刷新'
+    refresh: '刷新',
+    today: '今天',
+    last7Days: '近7天',
+    last30Days: '近30天',
+    searchResources: '搜索资源',
+    todayOps: '今日操作',
+    rowsRead: '读取行',
+    rowsWritten: '写入行',
+    queryCount: '查询次数',
+    operations: '操作次数',
+    storageUsage: '存储用量',
+    dataDelayNote: '统计延迟5-15分钟，非实时数据',
+    noApiToken: '请在 Worker 中设置 CF_API_TOKEN 和 CF_ACCOUNT_ID 密钥以查看存储统计'
 }
 export default zh

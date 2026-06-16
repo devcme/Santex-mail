@@ -8,7 +8,7 @@
         <Icon class="icon" @click="changeStar" v-else icon="solar:star-line-duotone" width="18" height="18"/>
       </span>
       <Icon class="icon" v-if="showReply" @click="handleReply" @dblclick="handleDblReply" icon="la:reply" width="21" height="21" />
-      <Icon class="icon" v-if="showReply" @click="handleReplyAll" @dblclick="handleDblReplyAll" icon="mdi:reply-all-outline" width="20" height="20" />
+      <Icon class="icon" v-if="showReply && showReplyAll" @click="handleReplyAll" @dblclick="handleDblReplyAll" icon="la:reply-all" width="21" height="21" />
       <Icon class="icon" v-if="showReply" @click="handleForward" @dblclick="handleDblForward" icon="iconoir:arrow-up-right" width="20" height="20" />
       <div class="toolbar-spacer"></div>
       <template v-if="uiStore.dark">
@@ -80,7 +80,7 @@
 </template>
 <script setup>
 import ShadowHtml from '@/components/shadow-html/index.vue'
-import { reactive, ref, onMounted } from "vue";
+import { reactive, ref, onMounted, computed } from "vue";
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { emailRead } from "@/request/email.js";
 import { Icon } from "@iconify/vue";
@@ -132,6 +132,15 @@ const srcList = reactive([])
 const bgMode = ref(0)
 const contentZoom = ref(1)
 const { t } = useI18n()
+
+const showReplyAll = computed(() => {
+  try {
+    const recipients = JSON.parse(props.email.recipient || '[]')
+    return recipients.length > 1
+  } catch (e) {
+    return false
+  }
+})
 
 onMounted(() => {
   if (props.showUnread && props.email.unread === EmailUnreadEnum.UNREAD) {

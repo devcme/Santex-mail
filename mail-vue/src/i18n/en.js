@@ -373,7 +373,19 @@ const en = {
     storageUsed: 'Storage Used',
     d1ReadPricing: 'Reads included in free tier',
     d1WritePricing: 'Included in row quota',
-    refresh: 'Refresh'
+    refresh: 'Refresh',
+    today: 'Today',
+    last7Days: '7 Days',
+    last30Days: '30 Days',
+    searchResources: 'Search resources',
+    todayOps: 'Today Ops',
+    rowsRead: 'Rows Read',
+    rowsWritten: 'Rows Written',
+    queryCount: 'Query Count',
+    operations: 'Operations',
+    storageUsage: 'Storage Usage',
+    dataDelayNote: 'Data delayed 5-15 minutes, not real-time',
+    noApiToken: 'Set CF_API_TOKEN and CF_ACCOUNT_ID secrets in Worker to view storage stats'
 }
 
 export default en

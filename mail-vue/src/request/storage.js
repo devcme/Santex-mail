@@ -1,5 +1,9 @@
 import http from '@/axios/index.js';
 
-export function storageStats() {
-    return http.get('/storage/stats', { noMsg: true });
+export function storageResources() {
+    return http.get('/storage/resources', { noMsg: true });
+}
+
+export function storageStats(params) {
+    return http.post('/storage/stats', params, { noMsg: true });
 }

@@ -1,87 +1,139 @@
 import app from '../hono/hono';
 import result from '../model/result';
-import { sql } from 'drizzle-orm';
 
-app.get('/storage/stats', async (c) => {
-	const env = c.env;
-	const data = {};
+const CF_API = 'https://api.cloudflare.com/client/v4';
 
-	// D1 stats
-	try {
-		const db = env.DB;
-		const tables = ['email', 'star', 'account', 'user', 'role', 'reg_key', 'setting', 'verify_record'];
-		const d1Stats = [];
-		for (const table of tables) {
-			try {
-				const countResult = db.prepare(`SELECT COUNT(*) as cnt FROM "${table}"`).first();
-				const count = countResult ? countResult.cnt : 0;
-				d1Stats.push({ table, count });
-			} catch (e) {
-				d1Stats.push({ table, count: 0 });
-			}
-		}
-		data.d1 = { tables: d1Stats, freeGB: 5 };
-	} catch (e) {
-		data.d1 = { tables: [], freeGB: 5, error: e.message };
-	}
+async function cfREST(env, path) {
+    const resp = await fetch(`${CF_API}${path}`, {
+        headers: {
+            'Authorization': `Bearer ${env.CF_API_TOKEN}`,
+            'Content-Type': 'application/json'
+        }
+    });
+    const json = await resp.json();
+    if (!json.success) {
+        throw new Error(json.errors?.[0]?.message || 'CF API error');
+    }
+    return json.result;
+}
 
-	// KV stats
-	try {
-		const kv = env.kv || env.KV || env.email_kv;
-		if (kv && typeof kv.list === 'function') {
-			let kvCount = 0;
-			let cursor = undefined;
-			do {
-				const res = await kv.list({ cursor, limit: 1000 });
-				kvCount += res.keys.length;
-				cursor = res.list_complete ? undefined : res.cursor;
-			} while (cursor);
-			data.kv = {
-				keyCount: kvCount,
-				freeReads: 100000,
-				freeWrites: 1000,
-				freeStorageGB: 1,
-				dailyReads: 100000,
-				dailyWrites: 1000,
-				storageGB: 1
-			};
-		} else {
-			data.kv = { keyCount: 'N/A', error: 'KV binding not available' };
-		}
-	} catch (e) {
-		data.kv = { keyCount: 0, error: e.message };
-	}
+async function cfGraphQL(env, query) {
+    const resp = await fetch(`${CF_API}/graphql`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${env.CF_API_TOKEN}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ query })
+    });
+    const json = await resp.json();
+    if (json.errors?.length) {
+        throw new Error(json.errors[0].message);
+    }
+    return json.data;
+}
 
-	// R2 stats
-	try {
-		const r2 = env.R2 || env.r2_bucket;
-		if (r2 && typeof r2.list === 'function') {
-			let objectCount = 0;
-			let totalSize = 0;
-			let cursor = undefined;
-			do {
-				const res = await r2.list({ cursor, limit: 1000 });
-				objectCount += res.objects.length;
-				for (const obj of res.objects) {
-					totalSize += obj.size || 0;
-				}
-				cursor = res.truncated ? res.cursor : undefined;
-			} while (cursor);
-			data.r2 = {
-				objectCount,
-				totalSize,
-				totalSizeGB: +(totalSize / 1073741824).toFixed(4),
-				freeStorageGB: 10,
-				pricePerGB: 0.015,
-				classAOpsPrice: 4.50,
-				classBOpsPrice: 0.36
-			};
-		} else {
-			data.r2 = { objectCount: 'N/A', error: 'R2 binding not available' };
-		}
-	} catch (e) {
-		data.r2 = { objectCount: 0, totalSize: 0, error: e.message };
-	}
+// GET /storage/resources - list all resources with names
+app.get('/storage/resources', async (c) => {
+    try {
+        const accountId = c.env.CF_ACCOUNT_ID || c.env.accountId;
+        if (!accountId || !c.env.CF_API_TOKEN) {
+            return c.json(result.ok({ d1: [], kv: [], r2: [], noToken: true }));
+        }
 
-	return c.json(result.ok(data));
+        const [d1List, kvList, r2List] = await Promise.all([
+            cfREST(c.env, `/accounts/${accountId}/d1/database`).catch(() => []),
+            cfREST(c.env, `/accounts/${accountId}/workers/namespaces`).catch(() => []),
+            cfREST(c.env, `/accounts/${accountId}/r2/buckets`).catch(() => { return { buckets: [] } }),
+        ]);
+
+        return c.json(result.ok({
+            d1: (d1List || []).map(d => ({ id: d.uuid, name: d.name, created_at: d.created_at })),
+            kv: (kvList || []).map(k => ({ id: k.id, name: k.title })),
+            r2: ((r2List.buckets || r2List) || []).map(r => ({ id: r.name || r.bucketName, name: r.name || r.bucketName })),
+        }));
+    } catch (e) {
+        return c.json(result.ok({ d1: [], kv: [], r2: [], error: e.message }));
+    }
+});
+
+// POST /storage/stats - get usage stats via GraphQL
+app.post('/storage/stats', async (c) => {
+    try {
+        const accountId = c.env.CF_ACCOUNT_ID || c.env.accountId;
+        if (!accountId || !c.env.CF_API_TOKEN) {
+            return c.json(result.ok({ noToken: true, hint: 'Set CF_API_TOKEN and CF_ACCOUNT_ID secrets in Worker' }));
+        }
+
+        const body = await c.req.json().catch(() => ({}));
+        const { startDate, endDate } = body;
+        const since = startDate || new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0];
+        const until = endDate || new Date().toISOString().split('T')[0];
+
+        // GraphQL query for storage and operations
+        const query = `{
+            viewer {
+                accounts(filter: { accountTag: "${accountId}" }) {
+                    d1Storage: d1StorageAdaptiveGroups(
+                        filter: { datetime_geq: "${since}", datetime_leq: "${until}" },
+                        limit: 100
+                    ) {
+                        dimensions { databaseId, databaseTag }
+                        sum { storageBytes }
+                    }
+                    d1Ops: d1AnalyticsAdaptiveGroups(
+                        filter: { datetime_geq: "${since}", datetime_leq: "${until}" },
+                        limit: 100
+                    ) {
+                        dimensions { databaseId, databaseTag }
+                        sum { rowsRead, rowsWritten, queryCount }
+                    }
+                    kvStorage: kvStorageAdaptiveGroups(
+                        filter: { datetime_geq: "${since}", datetime_leq: "${until}" },
+                        limit: 100
+                    ) {
+                        dimensions { namespaceId }
+                        sum { storageBytes }
+                    }
+                    kvOps: kvOperationsAdaptiveGroups(
+                        filter: { datetime_geq: "${since}", datetime_leq: "${until}" },
+                        limit: 100
+                    ) {
+                        dimensions { namespaceId, operation }
+                        count
+                    }
+                    r2Storage: r2StorageAdaptiveGroups(
+                        filter: { datetime_geq: "${since}", datetime_leq: "${until}" },
+                        limit: 100
+                    ) {
+                        dimensions { bucketName }
+                        sum { storageBytes, objectCount }
+                    }
+                    r2Ops: r2OperationsAdaptiveGroups(
+                        filter: { datetime_geq: "${since}", datetime_leq: "${until}" },
+                        limit: 100
+                    ) {
+                        dimensions { bucketName, operation }
+                        count
+                    }
+                }
+            }
+        }`;
+
+        const data = await cfGraphQL(c.env, query);
+        const accountData = data?.viewer?.accounts?.[0] || {};
+
+        return c.json(result.ok({
+            d1Storage: accountData.d1Storage || [],
+            d1Ops: accountData.d1Ops || [],
+            kvStorage: accountData.kvStorage || [],
+            kvOps: accountData.kvOps || [],
+            r2Storage: accountData.r2Storage || [],
+            r2Ops: accountData.r2Ops || [],
+            updateTime: new Date().toISOString(),
+            period: { since, until }
+        }));
+    } catch (e) {
+        return c.json(result.error(e.message));
+    }
 });
