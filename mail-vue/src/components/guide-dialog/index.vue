@@ -10,9 +10,10 @@
           <div class="guide-desc">{{ item.desc }}</div>
         </div>
       </div>
-      <div class="guide-scroll-hint">{{ $t('guideScrollHint') }}</div>
+      </div>
     </div>
     <template #footer>
+      <span class="footer-hint">{{ $t('guideScrollHint') }}</span>
       <el-button type="primary" @click="close">{{ $t('gotIt') }}</el-button>
     </template>
   </el-dialog>
@@ -82,6 +83,11 @@ const guideItems = computed(() => [
     icons: ['material-symbols-light:timer-arrow-down-outline'],
     label: t('guideSort'),
     desc: t('guideSortDesc')
+  },
+  {
+    icons: ['mingcute:question-line'],
+    label: t('guideHelp'),
+    desc: t('guideHelpDesc')
   },
   {
     icons: ['mingcute:notification-line'],
@@ -156,6 +162,11 @@ defineExpose({ open, show })
   text-align: center;
   color: var(--el-text-color-placeholder);
   font-size: 12px;
-  padding: 14px 0 4px;
+}
+
+.footer-hint {
+  color: var(--el-text-color-placeholder);
+  font-size: 12px;
+  margin-right: auto;
 }
 </style>

@@ -416,6 +416,8 @@ const en = {
     guideNotifyDesc: 'Click the bell icon to configure email notifications. Choose to notify only when the window is hidden.',
     guideRefresh: 'Refresh',
     guideRefreshDesc: 'Click the refresh icon to manually reload the email list. The inbox auto-fetches new messages.',
+    guideHelp: 'Help',
+    guideHelpDesc: 'Click this question mark button to reopen this guide at any time.',
     guideScrollHint: 'Scroll down for more'
 }
 
