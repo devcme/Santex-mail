@@ -329,6 +329,8 @@ function zoomOut() {
   box-shadow: var(--header-actions-border);
   font-size: 18px;
   flex-shrink: 0;
+  flex-wrap: nowrap;
+  overflow: hidden;
   .star {
     display: flex;
     align-items: center;
@@ -337,12 +339,18 @@ function zoomOut() {
   }
   .icon {
     cursor: pointer;
+    flex-shrink: 0;
   }
   .toolbar-spacer {
     flex: 1;
+    min-width: 10px;
   }
   .toolbar-right {
     margin-left: 0;
+  }
+  @media (max-width: 600px) {
+    gap: 12px;
+    padding: 9px 10px 8px;
   }
 }
 
