@@ -182,6 +182,5 @@ defineExpose({ open, show })
   color: var(--el-text-color-placeholder);
   font-size: 12px;
   margin-right: auto;
-  @media (max-width: 480px) { display: none; }
 }
 </style>
