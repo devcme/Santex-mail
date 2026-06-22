@@ -5,6 +5,9 @@
       <span class="breadcrumb-item">{{ $t(route.meta.title) }}</span>
     </div>
     <div class="toolbar">
+      <div class="icon-item help-icon" @click="openGuide">
+        <Icon icon="mingcute:question-line" width="20" height="20"/>
+      </div>
       <el-popover :placement="notifyPopoverPlacement" :width="280" trigger="click" v-model:visible="notifyPopoverShow" @show="refreshPermission">
         <template #reference>
           <div class="icon-item bell-icon">
@@ -141,6 +144,10 @@ function refreshPermission() {
   if (notifySupported()) {
     notifyPermissionVal.value = Notification.permission
   }
+}
+
+function openGuide() {
+  uiStore.showGuide++
 }
 
 async function grantNotification() {

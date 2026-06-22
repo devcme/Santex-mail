@@ -28,7 +28,7 @@ import Aside from '@/layout/aside/index.vue'
 import Header from '@/layout/header/index.vue'
 import Main from '@/layout/main/index.vue'
 import GuideDialog from '@/components/guide-dialog/index.vue'
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import {useUiStore} from "@/store/ui.js";
 import { ElNotification } from 'element-plus'
 import { useI18n } from 'vue-i18n'
@@ -61,8 +61,15 @@ onMounted(() => {
   window.addEventListener('message', handleMessage)
 
   if (!localStorage.getItem('guide-shown')) {
-    setTimeout(() => guideDialogRef.value?.open(), 500)
+    setTimeout(() => {
+      guideDialogRef.value?.open()
+      localStorage.setItem('guide-shown', '1')
+    }, 800)
   }
+})
+
+watch(() => uiStore.showGuide, () => {
+  guideDialogRef.value?.open()
 })
 
 onBeforeUnmount(() => {

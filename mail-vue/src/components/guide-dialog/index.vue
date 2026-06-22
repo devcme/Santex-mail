@@ -10,9 +10,9 @@
           <div class="guide-desc">{{ item.desc }}</div>
         </div>
       </div>
+      <div class="guide-scroll-hint">{{ $t('guideScrollHint') }}</div>
     </div>
     <template #footer>
-      <el-checkbox v-model="dontShow">{{ $t('guideDontShow') }}</el-checkbox>
       <el-button type="primary" @click="close">{{ $t('gotIt') }}</el-button>
     </template>
   </el-dialog>
@@ -25,7 +25,6 @@ import { useI18n } from "vue-i18n";
 
 const { t } = useI18n()
 const show = ref(false)
-const dontShow = ref(false)
 
 const guideItems = computed(() => [
   {
@@ -65,6 +64,7 @@ const guideItems = computed(() => [
   },
   {
     icons: ['mdi:theme-light-dark', 'material-symbols:zoom-in-rounded', 'material-symbols:zoom-out-rounded'],
+    iconSize: '18',
     label: t('guideBgZoom'),
     desc: t('guideBgZoomDesc')
   },
@@ -78,6 +78,21 @@ const guideItems = computed(() => [
     label: t('guideSignature'),
     desc: t('guideSignatureDesc')
   },
+  {
+    icons: ['material-symbols-light:timer-arrow-down-outline'],
+    label: t('guideSort'),
+    desc: t('guideSortDesc')
+  },
+  {
+    icons: ['mingcute:notification-line'],
+    label: t('guideNotify'),
+    desc: t('guideNotifyDesc')
+  },
+  {
+    icons: ['ion:reload'],
+    label: t('guideRefresh'),
+    desc: t('guideRefreshDesc')
+  },
 ])
 
 function open() {
@@ -86,9 +101,6 @@ function open() {
 
 function close() {
   show.value = false
-  if (dontShow.value) {
-    localStorage.setItem('guide-shown', '1')
-  }
 }
 
 defineExpose({ open, show })
@@ -137,5 +149,13 @@ defineExpose({ open, show })
   font-size: 13px;
   color: var(--el-text-color-secondary);
   line-height: 1.5;
+  white-space: pre-line;
+}
+
+.guide-scroll-hint {
+  text-align: center;
+  color: var(--el-text-color-placeholder);
+  font-size: 12px;
+  padding: 14px 0 4px;
 }
 </style>

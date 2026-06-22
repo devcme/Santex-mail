@@ -14,6 +14,7 @@ export const useUiStore = defineStore('ui', {
         dark: false,
         themeSet: false,
         notifyOnlyHidden: false,
+        showGuide: 0,
         asideCount: {
             email: 0,
             send: 0,
