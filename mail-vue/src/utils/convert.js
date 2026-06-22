@@ -2,10 +2,10 @@ import {useSettingStore} from "@/store/setting.js";
 export function cvtR2Url(key) {
 
     if (!key) {
-        return + 'https://' + ''
+        return ''
     }
 
-    if (key.startsWith('https://')) {
+    if (key.startsWith('https://') || key.startsWith('http://')) {
         return key
     }
 
