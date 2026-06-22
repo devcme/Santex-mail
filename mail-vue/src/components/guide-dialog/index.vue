@@ -1,5 +1,5 @@
 <template>
-  <el-dialog v-model="show" :title="$t('guideTitle')" width="600" class="guide-dialog" :close-on-click-modal="false">
+  <el-dialog v-model="show" :title="$t('guideTitle')" width="min(600px, 92vw)" class="guide-dialog" :close-on-click-modal="false">
     <div class="guide-content">
       <div class="guide-item" v-for="(item, i) in guideItems" :key="i">
         <div class="guide-icon-wrap">
@@ -116,6 +116,7 @@ defineExpose({ open, show })
 .guide-content {
   max-height: 60vh;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .guide-item {
@@ -124,6 +125,10 @@ defineExpose({ open, show })
   padding: 12px 0;
   border-bottom: 1px solid var(--el-border-color-extra-light);
   &:last-child { border-bottom: none; }
+  @media (max-width: 480px) {
+    gap: 10px;
+    padding: 10px 0;
+  }
 }
 
 .guide-icon-wrap {
@@ -134,6 +139,10 @@ defineExpose({ open, show })
   width: 80px;
   justify-content: center;
   padding-top: 2px;
+  @media (max-width: 480px) {
+    width: 50px;
+    gap: 3px;
+  }
 }
 
 .guide-icon {
@@ -156,6 +165,11 @@ defineExpose({ open, show })
   color: var(--el-text-color-secondary);
   line-height: 1.5;
   white-space: pre-line;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  @media (max-width: 480px) {
+    font-size: 12px;
+  }
 }
 
 .guide-scroll-hint {
@@ -168,5 +182,6 @@ defineExpose({ open, show })
   color: var(--el-text-color-placeholder);
   font-size: 12px;
   margin-right: auto;
+  @media (max-width: 480px) { display: none; }
 }
 </style>
