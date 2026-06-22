@@ -1,5 +1,5 @@
 <template>
-  <el-dialog v-model="show" :title="$t('guideTitle')" width="min(600px, 92vw)" class="guide-dialog" :close-on-click-modal="false">
+  <el-dialog v-model="show" :title="$t('guideTitle')" width="600" class="guide-dialog" :close-on-click-modal="false">
     <div class="guide-content">
       <div class="guide-item" v-for="(item, i) in guideItems" :key="i">
         <div class="guide-icon-wrap">
@@ -112,6 +112,10 @@ defineExpose({ open, show })
 </script>
 
 <style scoped lang="scss">
+:deep(.el-dialog) {
+  max-width: 92vw;
+}
+
 .guide-content {
   max-height: 60vh;
   overflow-y: auto;
