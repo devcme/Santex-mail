@@ -10,7 +10,6 @@
           <div class="guide-desc">{{ item.desc }}</div>
         </div>
       </div>
-      </div>
     </div>
     <template #footer>
       <span class="footer-hint">{{ $t('guideScrollHint') }}</span>
