@@ -20,12 +20,14 @@
     </el-container>
   </el-container>
   <writer ref="writerRef" />
+  <GuideDialog ref="guideDialogRef" />
 </template>
 
 <script setup>
 import Aside from '@/layout/aside/index.vue'
 import Header from '@/layout/header/index.vue'
 import Main from '@/layout/main/index.vue'
+import GuideDialog from '@/components/guide-dialog/index.vue'
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import {useUiStore} from "@/store/ui.js";
 import { ElNotification } from 'element-plus'
@@ -38,6 +40,7 @@ import { h } from 'vue'
 const uiStore = useUiStore();
 const draftStore = userDraftStore()
 const writerRef = ref({})
+const guideDialogRef = ref({})
 const { t } = useI18n()
 const isMobile = ref(window.innerWidth < 513)
 const handleResize = () => {
@@ -56,6 +59,10 @@ onMounted(() => {
   handleResize()
 
   window.addEventListener('message', handleMessage)
+
+  if (!localStorage.getItem('guide-shown')) {
+    setTimeout(() => guideDialogRef.value?.open(), 500)
+  }
 })
 
 onBeforeUnmount(() => {

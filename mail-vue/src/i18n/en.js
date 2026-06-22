@@ -386,7 +386,30 @@ const en = {
     storageUsage: 'Storage Usage',
     dataDelayNote: 'Data delayed 5-15 minutes, not real-time',
     noApiToken: 'Set CF_API_TOKEN and CF_ACCOUNT_ID secrets in Worker to view storage stats',
-    other: 'Other'
+    other: 'Other',
+    guideTitle: 'Quick Guide',
+    guideDontShow: "Don't show again",
+    gotIt: 'Got it',
+    guideWriteEmail: 'Compose',
+    guideWriteEmailDesc: 'Click the edit button at the top of the sidebar to compose. Double-click to open in a new window.',
+    guideSidebar: 'Sidebar',
+    guideSidebarDesc: 'Click the hamburger menu to toggle sidebar. Hover over collapsed sidebar to auto-expand.',
+    guideDblClick: 'Double Click',
+    guideDblClickDesc: 'Double-click email → new window detail. Double-click reply/forward → new window compose. Double-click send → new window send.',
+    guideCompact: 'Compact Mode',
+    guideCompactDesc: 'Toggle between single-row and multi-row email list layout.',
+    guideReplyFwd: 'Reply / Reply All / Forward',
+    guideReplyFwdDesc: 'Single click for in-page reply, double-click for new window. Reply All only shows when multiple recipients.',
+    guideStar: 'Star',
+    guideStarDesc: 'Click the star icon to favorite or unfavorite an email.',
+    guideClose: 'Close Preview',
+    guideCloseDesc: 'Click X to close the email detail panel.',
+    guideBgZoom: 'Background / Zoom',
+    guideBgZoomDesc: 'Toggle white background (dark mode only). Zoom in/out email content by 10% per click.',
+    guideAttachment: 'Attachments',
+    guideAttachmentDesc: 'Click paperclip icon while composing to add attachments. Click image attachments to preview.',
+    guideSignature: 'Signature',
+    guideSignatureDesc: 'Click pen icon while composing to insert signature. Manage signatures in the main compose panel.'
 }
 
 export default en

@@ -23,7 +23,7 @@
           <Icon class="icon" @click="changeTimeSort" icon="material-symbols-light:timer-arrow-up-outline" v-else
                 width="28" height="28"/>
           <Icon class="icon" :class="{ 'icon-active': compactMode }" @click="toggleCompact"
-                :icon="compactMode ? 'material-symbols:view-agenda-rounded' : 'material-symbols:view-stream-rounded'" width="22" height="22"/>
+                :icon="compactMode ? 'mdi:view-agenda-outline' : 'mdi:view-list-outline'" width="22" height="22"/>
           <el-popover placement="bottom" :width="320" trigger="click" v-model:visible="searchPopoverShow">
             <template #reference>
               <Icon class="icon" icon="iconoir:search" width="20" height="20"/>
