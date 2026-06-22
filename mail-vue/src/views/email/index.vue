@@ -1,5 +1,5 @@
 <template>
-  <div class="email-split" :class="{ 'has-detail': selectedEmail, 'is-resizing': isResizing, 'narrow-view': isNarrow }">
+  <div class="email-split" :class="{ 'has-detail': selectedEmail, 'is-resizing': isResizing, 'narrow-view': isNarrow, 'fullscreen-detail': isFullScreenDetail }">
     <div class="email-list-panel" :style="selectedEmail ? { width: panelWidth + 'px', flex: 'none' } : {}">
       <emailScroll ref="scroll"
                   :cancel-success="cancelStar"
@@ -22,8 +22,8 @@
                 v-if="params.timeSort === 0" width="28" height="28"/>
           <Icon class="icon" @click="changeTimeSort" icon="material-symbols-light:timer-arrow-up-outline" v-else
                 width="28" height="28"/>
-          <Icon class="icon" :class="{ 'icon-active': compactOverride }" @click="compactOverride = !compactOverride"
-                :icon="compactOverride ? 'material-symbols:view-agenda-rounded' : 'material-symbols:view-stream-rounded'" width="22" height="22"/>
+          <Icon class="icon" :class="{ 'icon-active': compactMode }" @click="toggleCompact"
+                :icon="compactMode ? 'material-symbols:view-agenda-rounded' : 'material-symbols:view-stream-rounded'" width="22" height="22"/>
           <el-popover placement="bottom" :width="320" trigger="click" v-model:visible="searchPopoverShow">
             <template #reference>
               <Icon class="icon" icon="iconoir:search" width="20" height="20"/>
@@ -104,13 +104,18 @@ const params = reactive({
 
 const { t } = useI18n()
 const {
-  selectedEmail, panelWidth, isResizing, isNarrow,
+  selectedEmail, panelWidth, isResizing, isNarrow, isFullScreenDetail,
   setEmail, closeDetail, dblClickContent,
   startResize, handleTouchStart
 } = useSplitPane()
 
 const compactOverride = ref(false)
 const compactMode = computed(() => isNarrow.value || compactOverride.value)
+
+function toggleCompact() {
+  if (isNarrow.value) return
+  compactOverride.value = !compactOverride.value
+}
 const searchPopoverShow = ref(false)
 const searchParams = reactive({ searchType: 'name', keyword: '' })
 const activeSearchParams = ref(null)
@@ -272,12 +277,10 @@ function clearSearch() {
     .email-list-panel { /* compact mode active, keep visible */ }
   }
 
-  @media (max-width: 679px) {
-    &.has-detail {
-      .email-list-panel { display: none !important; }
-      .resize-handle { display: none !important; }
-      .email-detail-panel { min-width: 0 !important; }
-    }
+  &.fullscreen-detail {
+    .email-list-panel { display: none !important; }
+    .resize-handle { display: none !important; }
+    .email-detail-panel { min-width: 0 !important; }
   }
 
   &.is-resizing {

@@ -1,17 +1,54 @@
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useEmailStore } from '@/store/email.js'
+import { useUiStore } from '@/store/ui.js'
 
 const PANEL_KEY = 'split-panel-width'
 const NARROW_BREAKPOINT = 512
+const MIN_LIST = 400
+const MIN_DETAIL = 280
+const FULLSCREEN_THRESHOLD = MIN_LIST + MIN_DETAIL
 
 export function useSplitPane() {
   const emailStore = useEmailStore()
+  const uiStore = useUiStore()
   const selectedEmail = ref(null)
   const panelWidth = ref(parseInt(localStorage.getItem(PANEL_KEY)) || 420)
   const isResizing = ref(false)
   const isNarrow = computed(() => !!selectedEmail.value && panelWidth.value < NARROW_BREAKPOINT)
   let startX = 0
   let startWidth = 0
+
+  const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1024)
+
+  function getSidebarWidth() {
+    if (windowWidth.value <= 512) return 0
+    return uiStore.asideShow ? 176 : 64
+  }
+
+  const containerWidth = computed(() => Math.max(0, windowWidth.value - getSidebarWidth()))
+  const isFullScreenDetail = computed(() => !!selectedEmail.value && containerWidth.value < FULLSCREEN_THRESHOLD)
+
+  function onWindowResize() {
+    windowWidth.value = window.innerWidth
+  }
+
+  onMounted(() => {
+    window.addEventListener('resize', onWindowResize)
+    squeezePanel()
+  })
+  onBeforeUnmount(() => {
+    window.removeEventListener('resize', onWindowResize)
+  })
+
+  function squeezePanel() {
+    const maxW = containerWidth.value - MIN_DETAIL - 8
+    if (maxW < MIN_LIST) return
+    if (panelWidth.value > maxW) {
+      panelWidth.value = Math.max(MIN_LIST, maxW)
+    }
+  }
+
+  watch(containerWidth, () => squeezePanel())
 
   function setEmail(email, opts = {}) {
     emailStore.contentData.email = email
@@ -40,8 +77,7 @@ export function useSplitPane() {
   }
 
   function getContainerWidth() {
-    const container = document.querySelector('.email-split')
-    return container ? container.clientWidth : window.innerWidth
+    return containerWidth.value
   }
 
   function startResize(e) {
@@ -59,10 +95,11 @@ export function useSplitPane() {
 
   function onResize(e) {
     if (!isResizing.value) return
-    const containerWidth = getContainerWidth()
+    const cw = containerWidth.value
     const delta = e.clientX - startX
-    const maxWidth = containerWidth - 288
-    const newWidth = Math.max(400, Math.min(startWidth + delta, maxWidth))
+    const maxWidth = cw - MIN_DETAIL - 8
+    const minWidth = Math.min(MIN_LIST, maxWidth)
+    const newWidth = Math.max(minWidth, Math.min(startWidth + delta, maxWidth))
     panelWidth.value = newWidth
     if (newWidth >= maxWidth) {
       closeDetail()
@@ -77,10 +114,10 @@ export function useSplitPane() {
     document.body.style.cursor = ''
     document.body.style.userSelect = ''
 
-    const containerWidth = getContainerWidth()
-    const maxWidth = containerWidth - 288
+    const cw = containerWidth.value
+    const maxWidth = cw - MIN_DETAIL - 8
     if (panelWidth.value >= maxWidth) {
-      panelWidth.value = Math.max(400, parseInt(localStorage.getItem(PANEL_KEY)) || 420)
+      panelWidth.value = Math.max(MIN_LIST, parseInt(localStorage.getItem(PANEL_KEY)) || 420)
     }
 
     localStorage.setItem(PANEL_KEY, panelWidth.value)
@@ -98,10 +135,11 @@ export function useSplitPane() {
 
   function onTouchMove(e) {
     if (!isResizing.value) return
-    const containerWidth = getContainerWidth()
+    const cw = containerWidth.value
     const delta = e.touches[0].clientX - startX
-    const maxWidth = containerWidth - 288
-    const newWidth = Math.max(400, Math.min(startWidth + delta, maxWidth))
+    const maxWidth = cw - MIN_DETAIL - 8
+    const minWidth = Math.min(MIN_LIST, maxWidth)
+    const newWidth = Math.max(minWidth, Math.min(startWidth + delta, maxWidth))
     panelWidth.value = newWidth
     if (newWidth >= maxWidth) {
       closeDetail()
@@ -119,6 +157,7 @@ export function useSplitPane() {
     panelWidth,
     isResizing,
     isNarrow,
+    isFullScreenDetail,
     setEmail,
     closeDetail,
     dblClickContent,

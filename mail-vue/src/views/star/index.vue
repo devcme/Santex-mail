@@ -1,5 +1,5 @@
 <template>
-  <div class="email-split" :class="{ 'has-detail': selectedEmail, 'is-resizing': isResizing, 'narrow-view': isNarrow }">
+  <div class="email-split" :class="{ 'has-detail': selectedEmail, 'is-resizing': isResizing, 'narrow-view': isNarrow, 'fullscreen-detail': isFullScreenDetail }">
     <div class="email-list-panel" :style="selectedEmail ? { width: panelWidth + 'px', flex: 'none' } : {}">
       <emailScroll type="star" ref="scroll"
                   :allow-star="false"
@@ -56,7 +56,7 @@ const emailStore = useEmailStore();
 const uiStore = useUiStore();
 
 const {
-  selectedEmail, panelWidth, isResizing, isNarrow,
+  selectedEmail, panelWidth, isResizing, isNarrow, isFullScreenDetail,
   setEmail, closeDetail, dblClickContent,
   startResize, handleTouchStart
 } = useSplitPane()
@@ -108,12 +108,10 @@ onMounted(() => {
     .email-list-panel { /* compact mode active, keep visible */ }
   }
 
-  @media (max-width: 679px) {
-    &.has-detail {
-      .email-list-panel { display: none !important; }
-      .resize-handle { display: none !important; }
-      .email-detail-panel { min-width: 0 !important; }
-    }
+  &.fullscreen-detail {
+    .email-list-panel { display: none !important; }
+    .resize-handle { display: none !important; }
+    .email-detail-panel { min-width: 0 !important; }
   }
 
   &.is-resizing { * { pointer-events: none; } }

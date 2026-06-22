@@ -325,7 +325,7 @@ let scrollTop = 0
 const latestEmail = ref(null)
 const scrollbarRef = ref(null)
 let reqLock = false
-let isMobile = ref(innerWidth < 1367)
+let isMobile = ref(innerWidth < 680)
 let skeletonRows = 0
 const timePaddingRight = ref('');
 const keyCount = ref(0);
@@ -386,7 +386,7 @@ onUnmounted(() => {
 getEmailList()
 
 window.onresize = () => {
-  isMobile.value = innerWidth < 1367
+  isMobile.value = innerWidth < 680
 }
 
 function onScroll(e) {
@@ -1022,7 +1022,7 @@ function loadData() {
   position: relative;
   transition: background 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
   height: 48px;
-  @media (max-width: 1366px) {
+  @media (max-width: 679px) {
     height: 83px;
   }
 
@@ -1032,7 +1032,7 @@ function loadData() {
   }
   &.all-email {
     height: 65px;
-    @media (max-width: 1366px) {
+    @media (max-width: 679px) {
       height: 132px;
     }
   }
@@ -1043,7 +1043,7 @@ function loadData() {
     margin-top: 5px;
     margin-bottom: 2px;
     color: var(--email-scroll-content-color);
-    @media (max-width: 1366px) {
+    @media (max-width: 679px) {
       flex-direction: column;
     }
 
@@ -1084,7 +1084,7 @@ function loadData() {
     padding-left: 15px;
     padding-right: 20px;
     justify-content: center;
-    @media (min-width: 1367px) {
+    @media (min-width: 680px) {
       justify-content: start;
       height: 100%;
       align-self: start;
@@ -1093,7 +1093,7 @@ function loadData() {
   }
 
   .title-column {
-    @media (max-width: 1366px) {
+    @media (max-width: 679px) {
       grid-template-columns: 1fr !important;
       gap: 4px !important;
     }
@@ -1104,7 +1104,7 @@ function loadData() {
     display: grid;
     grid-template-columns: 150px 1fr;
     min-width: 0;
-    @media (max-width: 1366px) {
+    @media (max-width: 679px) {
       padding-right: 15px;
     }
     @media (max-width: 600px) {
@@ -1122,7 +1122,7 @@ function loadData() {
         display: flex;
         flex-direction: column;
         align-content: center;
-        @media (max-width: 1366px) {
+        @media (max-width: 679px) {
           flex-direction: row;
           gap: 5px;
         }
@@ -1139,7 +1139,7 @@ function loadData() {
           align-items: center;
         }
 
-        @media (min-width: 1366px) {
+        @media (min-width: 680px) {
           grid-template-columns: 1fr;
           > span:last-child {
             display: none;
@@ -1164,7 +1164,7 @@ function loadData() {
       .phone-time {
         font-weight: normal;
         font-size: 12px;
-        @media (min-width: 1367px) {
+        @media (min-width: 680px) {
           display: none;
         }
       }
@@ -1174,7 +1174,7 @@ function loadData() {
       .text-skeleton-one {
         width: 80%;
         height: 16px;
-        @media (max-width: 1366px) {
+        @media (max-width: 679px) {
           width: 40%;
         }
         @media (max-width: 767px) {
@@ -1185,10 +1185,10 @@ function loadData() {
       .text-skeleton-two {
         width: min(300px, 100%);
         height: 16px;
-        @media (min-width: 1367px) {
+        @media (min-width: 680px) {
           display: none;
         }
-        @media (max-width: 1366px) {
+        @media (max-width: 679px) {
           width: 100%;
         }
       }
@@ -1197,7 +1197,7 @@ function loadData() {
     .email-text {
       display: grid;
       grid-template-columns: auto 1fr;
-      @media (max-width: 1366px) {
+      @media (max-width: 679px) {
         grid-template-columns: 1fr;
       }
 
@@ -1208,7 +1208,7 @@ function loadData() {
         overflow: hidden;
         white-space: nowrap;
         min-width: 0;
-        @media (min-width: 1367px) {
+        @media (min-width: 680px) {
           padding-left: 5px;
         }
       }
@@ -1239,7 +1239,7 @@ function loadData() {
         text-overflow: ellipsis;
         padding-left: 10px;
         color: var(--email-scroll-content-color);
-        @media (max-width: 1366px) {
+        @media (max-width: 679px) {
           padding-left: 0;
           margin-top: 0;
         }
@@ -1255,13 +1255,13 @@ function loadData() {
     display: flex;
     padding-left: 15px;
     align-items: center;
-    @media (max-width: 1366px) {
+    @media (max-width: 679px) {
       display: none;
     }
   }
 
   .email-right-skeleton {
-    @media (max-width: 1366px) {
+    @media (max-width: 679px) {
       display: none;
     }
   }
@@ -1286,7 +1286,7 @@ function loadData() {
   width: 40px;
 }
 
-@media (max-width: 1366px) {
+@media (max-width: 679px) {
   .pc-star {
     display: none;
   }
