@@ -1,5 +1,6 @@
 import orm from '../entity/orm';
 import { att } from '../entity/att';
+import email from '../entity/email';
 import { and, eq, isNull, inArray, desc } from 'drizzle-orm';
 import r2Service from './r2-service';
 import constant from '../const/constant';
@@ -34,12 +35,14 @@ const attService = {
 		await orm(c).insert(att).values(attachments).run();
 	},
 
-	list(c, params, userId) {
+	async list(c, params, userId) {
 		const { emailId } = params;
-
+		const emailRow = await orm(c).select({ userId: email.userId }).from(email).where(eq(email.emailId, emailId)).get();
+		if (!emailRow) return [];
 		return orm(c).select().from(att).where(
 			and(
 				eq(att.emailId, emailId),
+				eq(att.userId, emailRow.userId),
 				eq(att.type, attConst.type.ATT),
 				isNull(att.contentId)
 			)
