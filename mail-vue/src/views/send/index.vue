@@ -180,6 +180,14 @@ function clearSearch() {
     .email-list-panel { /* compact mode active, keep visible */ }
   }
 
+  @media (max-width: 679px) {
+    &.has-detail {
+      .email-list-panel { display: none !important; }
+      .resize-handle { display: none !important; }
+      .email-detail-panel { min-width: 0 !important; }
+    }
+  }
+
   &.is-resizing { * { pointer-events: none; } }
 
   .email-list-panel {
