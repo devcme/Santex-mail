@@ -105,8 +105,8 @@ onMounted(() => {
   }
 
   &.narrow-view.has-detail {
-    .email-list-panel {
-    }
+    .email-list-panel { display: none; }
+    .resize-handle { display: none; }
   }
 
   &.is-resizing { * { pointer-events: none; } }
