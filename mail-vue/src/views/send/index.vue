@@ -177,8 +177,7 @@ function clearSearch() {
   }
 
   &.narrow-view.has-detail {
-    .email-list-panel { display: none; }
-    .resize-handle { display: none; }
+    .email-list-panel { /* compact mode active, keep visible */ }
   }
 
   &.is-resizing { * { pointer-events: none; } }
