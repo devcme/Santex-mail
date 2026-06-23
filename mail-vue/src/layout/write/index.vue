@@ -146,7 +146,7 @@
 </template>
 <script setup>
 import tinyEditor from '@/components/tiny-editor/index.vue'
-import {h, nextTick, onMounted, onUnmounted, reactive, ref, toRaw, computed} from "vue";
+import {h, nextTick, onMounted, onUnmounted, reactive, ref, toRaw, computed, watch} from "vue";
 import {Icon} from "@iconify/vue";
 import {useUserStore} from "@/store/user.js";
 import {emailSend} from "@/request/email.js";
@@ -217,6 +217,25 @@ const form = reactive({
   attachments: [],
   draftId: null,
 })
+
+const AUTO_DRAFT_KEY = 'auto-draft-main'
+let autoSaveTimer = null
+
+function clearAutoDraft() {
+  localStorage.removeItem(AUTO_DRAFT_KEY)
+}
+
+watch(() => form, () => {
+  if (!show.value) return
+  if (autoSaveTimer) clearTimeout(autoSaveTimer)
+  autoSaveTimer = setTimeout(() => {
+    try {
+      const data = JSON.parse(JSON.stringify(form))
+      data.createTime = new Date().toISOString()
+      localStorage.setItem(AUTO_DRAFT_KEY, JSON.stringify(data))
+    } catch (e) {}
+  }, 1000)
+}, { deep: true })
 
 const selectRecipientList = ref([])
 
@@ -409,6 +428,7 @@ async function sendEmail() {
   sending = true
 
   show.value = false
+  clearAutoDraft()
 
   emailSend(form, (e) => {
     percent.value = Math.round((e.loaded * 98) / e.total)
@@ -727,6 +747,7 @@ async function saveDraft() {
   if (editor.value && editor.value.getContent) {
     form.content = editor.value.getContent()
   }
+  clearAutoDraft()
   if (form.draftId) {
     draftStore.setDraft = {...toRaw(form)}
     show.value = false
@@ -753,6 +774,7 @@ function confirmDiscard() {
     type: 'warning'
   }).then(() => {
     show.value = false
+    clearAutoDraft()
     resetForm()
   })
 }

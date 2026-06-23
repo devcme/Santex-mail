@@ -74,7 +74,7 @@
 </template>
 <script setup>
 import tinyEditor from '@/components/tiny-editor/index.vue'
-import { reactive, ref, onMounted, computed, nextTick } from "vue";
+import { reactive, ref, onMounted, computed, nextTick, watch } from "vue";
 import { Icon } from "@iconify/vue";
 import { ElMessage, ElNotification, ElMessageBox } from 'element-plus'
 import { useUserStore } from "@/store/user.js";
@@ -110,6 +110,25 @@ let formReady = false
 let percentMessage = null
 let sending = false
 const percent = ref(0)
+
+const AUTO_DRAFT_KEY = 'auto-draft-standalone'
+let autoSaveTimer = null
+
+function clearAutoDraft() {
+  localStorage.removeItem(AUTO_DRAFT_KEY)
+}
+
+watch(() => form, () => {
+  if (!formReady) return
+  if (autoSaveTimer) clearTimeout(autoSaveTimer)
+  autoSaveTimer = setTimeout(() => {
+    try {
+      const data = JSON.parse(JSON.stringify(form))
+      data.createTime = new Date().toISOString()
+      localStorage.setItem(AUTO_DRAFT_KEY, JSON.stringify(data))
+    } catch (e) {}
+  }, 1000)
+}, { deep: true })
 
 const form = reactive({
   sendEmail: '',
@@ -311,6 +330,7 @@ async function saveDraftLocal() {
   if (editor.value && editor.value.getContent) {
     form.content = editor.value.getContent()
   }
+  clearAutoDraft()
   // send draft data to opener to save
   if (window.opener && !window.opener.closed) {
     const draftData = JSON.parse(JSON.stringify(form))
@@ -439,6 +459,7 @@ async function sendEmail() {
     })
     userStore.refreshUserInfo?.()
     addRecipientRecord()
+    clearAutoDraft()
     if (window.opener && !window.opener.closed) {
       window.opener.postMessage({ type: 'send-success' }, window.location.origin)
     }
@@ -616,12 +637,10 @@ function addRecipientRecord() {
 </style>
 
 <style lang="scss">
-.standalone-compose {
-  .el-message-box {
-    z-index: 3000 !important;
-  }
-  .el-overlay {
-    z-index: 2999 !important;
-  }
+.el-message-box {
+  z-index: 3000 !important;
+}
+.el-overlay {
+  z-index: 2999 !important;
 }
 </style>

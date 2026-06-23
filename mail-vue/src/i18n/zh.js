@@ -418,6 +418,8 @@ const zh = {
     guideRefreshDesc: '点击刷新图标手动刷新邮件列表。收件箱会自动拉取新邮件',
     guideHelp: '使用帮助',
     guideHelpDesc: '点击此问号按钮可随时重新打开本使用指南',
-    guideScrollHint: '向下滚动查看更多'
+    guideScrollHint: '向下滚动查看更多',
+    autoDraftRecovered: '草稿已恢复',
+    autoDraftRecoveredDesc: '检测到 {count} 封未保存的邮件，已自动保存至草稿箱'
 }
 export default zh

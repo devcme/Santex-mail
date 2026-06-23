@@ -36,6 +36,7 @@ import writer from '@/layout/write/index.vue'
 import db from '@/db/db.js'
 import { userDraftStore } from '@/store/draft.js'
 import { h } from 'vue'
+import dayjs from 'dayjs'
 
 const uiStore = useUiStore();
 const draftStore = userDraftStore()
@@ -59,6 +60,8 @@ onMounted(() => {
   handleResize()
 
   window.addEventListener('message', handleMessage)
+
+  recoverAutoDrafts()
 
   if (!localStorage.getItem('guide-shown')) {
     setTimeout(() => {
@@ -131,6 +134,46 @@ function checkComposeAction() {
     }
   } catch (e) {
     localStorage.removeItem('compose-action')
+  }
+}
+
+async function recoverAutoDrafts() {
+  const keys = ['auto-draft-main', 'auto-draft-standalone']
+  let recovered = 0
+  for (const key of keys) {
+    const raw = localStorage.getItem(key)
+    if (!raw) continue
+    try {
+      const data = JSON.parse(raw)
+      localStorage.removeItem(key)
+      if (!data.subject && !data.content && !data.receiveEmail?.length) continue
+      if (data.draftId) {
+        draftStore.setDraft = { ...data }
+      } else if (db.value) {
+        const fd = { ...data }
+        delete fd.draftId
+        delete fd.attachments
+        fd.createTime = dayjs().utc().format('YYYY-MM-DD HH:mm:ss')
+        const draftId = await db.value.draft.add({ ...fd })
+        if (data.attachments?.length) {
+          db.value.att.add({ draftId, attachments: data.attachments })
+        }
+        draftStore.refreshList++
+      }
+      recovered++
+    } catch (e) {
+      localStorage.removeItem(key)
+    }
+  }
+  if (recovered > 0) {
+    setTimeout(() => {
+      ElNotification({
+        title: t('autoDraftRecovered'),
+        message: t('autoDraftRecoveredDesc', { count: recovered }),
+        type: 'success',
+        position: 'bottom-right'
+      })
+    }, 1500)
   }
 }
 </script>

@@ -418,7 +418,9 @@ const en = {
     guideRefreshDesc: 'Click the refresh icon to manually reload the email list. The inbox auto-fetches new messages.',
     guideHelp: 'Help',
     guideHelpDesc: 'Click this question mark button to reopen this guide at any time.',
-    guideScrollHint: 'Scroll down for more'
+    guideScrollHint: 'Scroll down for more',
+    autoDraftRecovered: 'Draft Recovered',
+    autoDraftRecoveredDesc: '{count} unsaved email(s) detected, automatically saved to drafts'
 }
 
 export default en
