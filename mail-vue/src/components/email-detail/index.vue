@@ -60,6 +60,7 @@
                 <div class="att-size">{{ formatBytes(att.size) }}</div>
                 <div class="opt-icon att-icon-item">
                   <Icon v-if="isImage(att.filename)" icon="hugeicons:view" width="22" height="22" @click="showImage(att.key)"/>
+                  <Icon v-else-if="isPdf(att.filename) || isDoc(att.filename)" icon="hugeicons:view" width="22" height="22" @click.stop="previewAtt(att)"/>
                   <a :href="cvtR2Url(att.key)" :download="att.filename" target="_blank">
                     <Icon icon="system-uicons:push-down" width="22" height="22"/>
                   </a>
@@ -268,11 +269,26 @@ function showImage(key) {
 function handleAttClick(att) {
   if (isImage(att.filename || att.key)) {
     showImage(att.key)
+  } else {
+    previewAtt(att)
   }
+}
+
+function previewAtt(att) {
+  const url = cvtR2Url(att.key)
+  window.open(url, '_blank')
 }
 
 function isImage(filename) {
   return ['png', 'jpg', 'jpeg', 'bmp', 'gif', 'jfif', 'webp', 'svg', 'tiff', 'ico'].includes(getExtName(filename))
+}
+
+function isPdf(filename) {
+  return getExtName(filename) === 'pdf'
+}
+
+function isDoc(filename) {
+  return ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'csv', 'txt'].includes(getExtName(filename))
 }
 
 function formateReceive(recipient) {

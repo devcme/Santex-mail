@@ -1,5 +1,8 @@
 <template>
-  <div class="standalone-compose">
+  <div class="standalone-compose" @dragover.prevent @dragenter="onDragEnter" @dragleave="onDragLeave" @drop.prevent="onDrop">
+    <div class="drop-overlay" v-if="dragOver">
+      <div class="drop-hint">{{ $t('dropFilesHere') }}</div>
+    </div>
     <div class="compose-box">
       <div class="compose-header">
         <div class="compose-title">
@@ -95,6 +98,7 @@ import { h } from "vue";
 import dayjs from "dayjs";
 import db from "@/db/db.js"
 import { userDraftStore } from "@/store/draft.js"
+import { useFileDrop } from "@/utils/useFileDrop.js"
 
 const { t } = useI18n()
 const writerStore = useWriterStore();
@@ -145,6 +149,9 @@ const form = reactive({
   attachments: [],
   draftId: null,
 })
+
+const { dragOver, onDragEnter, onDragLeave, handleDrop: _onDrop } = useFileDrop()
+function onDrop(e) { _onDrop(e, form, editor) }
 
 onMounted(() => {
   const composeDataRaw = localStorage.getItem('compose-data')
@@ -634,6 +641,29 @@ function addRecipientRecord() {
     text-align: center;
     padding: 4px 0;
     border-top: 1px solid var(--el-border-color-light);
+  }
+}
+</style>
+
+<style scoped lang="scss">
+.drop-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(64, 158, 255, 0.12);
+  border: 3px dashed var(--el-color-primary);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  .drop-hint {
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--el-color-primary);
+    background: var(--el-bg-color);
+    padding: 16px 32px;
+    border-radius: 8px;
   }
 }
 </style>

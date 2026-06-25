@@ -1,6 +1,9 @@
 <template>
   <transition name="fade-pop">
-  <div class="send" v-show="show">
+  <div class="send" v-show="show" @dragover.prevent @dragenter="onDragEnter" @dragleave="onDragLeave" @drop.prevent="onDrop">
+    <div class="drop-overlay" v-if="dragOver">
+      <div class="drop-hint">{{ $t('dropFilesHere') }}</div>
+    </div>
     <div class="write-box">
       <div class="title">
         <div class="title-left">
@@ -162,6 +165,7 @@ import {useSettingStore} from "@/store/setting.js";
 import {userDraftStore} from "@/store/draft.js";
 import {useWriterStore} from "@/store/writer.js";
 import db from "@/db/db.js";
+import { useFileDrop } from "@/utils/useFileDrop.js";
 import dayjs from "dayjs";
 import {useI18n} from "vue-i18n";
 import router from "@/router/index.js";
@@ -243,6 +247,9 @@ watch(() => form, () => {
     }
   }, 1000)
 }, { deep: true })
+
+const { dragOver, onDragEnter, onDragLeave, handleDrop: _onDrop } = useFileDrop()
+function onDrop(e) { _onDrop(e, form, editor) }
 
 const selectRecipientList = ref([])
 
@@ -1066,6 +1073,27 @@ function openComposeNewWindow() {
     display: flex;
     justify-content: flex-end;
     gap: 8px;
+  }
+}
+
+.drop-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(64, 158, 255, 0.12);
+  border: 3px dashed var(--el-color-primary);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  .drop-hint {
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--el-color-primary);
+    background: var(--el-bg-color);
+    padding: 16px 32px;
+    border-radius: 8px;
   }
 }
 </style>

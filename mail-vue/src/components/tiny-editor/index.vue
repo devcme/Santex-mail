@@ -15,7 +15,9 @@ import {useSettingStore} from '@/store/setting.js'
 defineExpose({
   clearEditor,
   focus,
-  getContent
+  getContent,
+  setContent: (c) => { if (editor.value) editor.value.setContent(c) },
+  insertContent: (c) => { if (editor.value) editor.value.insertContent(c) }
 })
 
 const props = defineProps({

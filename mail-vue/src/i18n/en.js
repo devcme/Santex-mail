@@ -420,7 +420,12 @@ const en = {
     guideHelpDesc: 'Click this question mark button to reopen this guide at any time.',
     guideScrollHint: 'Scroll down for more',
     autoDraftRecovered: 'Draft Recovered',
-    autoDraftRecoveredDesc: '{count} unsaved email(s) detected, automatically saved to drafts'
+    autoDraftRecoveredDesc: '{count} unsaved email(s) detected, automatically saved to drafts',
+    dropFilesHere: 'Drop files here',
+    dropImageTitle: 'Image File',
+    dropImageHint: 'Image {name} detected. Insert into email body or as attachment?',
+    insertInline: 'Insert Inline',
+    addAsAttachment: 'Add as Attachment'
 }
 
 export default en

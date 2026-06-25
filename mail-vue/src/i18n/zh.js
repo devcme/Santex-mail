@@ -420,6 +420,11 @@ const zh = {
     guideHelpDesc: '点击此问号按钮可随时重新打开本使用指南',
     guideScrollHint: '向下滚动查看更多',
     autoDraftRecovered: '草稿已恢复',
-    autoDraftRecoveredDesc: '检测到 {count} 封未保存的邮件，已自动保存至草稿箱'
+    autoDraftRecoveredDesc: '检测到 {count} 封未保存的邮件，已自动保存至草稿箱',
+    dropFilesHere: '将文件拖放到此处',
+    dropImageTitle: '图片文件',
+    dropImageHint: '检测到图片 {name}，要插入邮件正文还是作为附件？',
+    insertInline: '插入正文',
+    addAsAttachment: '作为附件'
 }
 export default zh
