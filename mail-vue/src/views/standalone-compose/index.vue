@@ -73,6 +73,8 @@
   </div>
 </template>
 <script setup>
+import 'element-plus/theme-chalk/el-overlay.css'
+import 'element-plus/theme-chalk/el-message-box.css'
 import tinyEditor from '@/components/tiny-editor/index.vue'
 import { reactive, ref, onMounted, computed, nextTick, watch } from "vue";
 import { Icon } from "@iconify/vue";

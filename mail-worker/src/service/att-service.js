@@ -32,7 +32,9 @@ const attService = {
 
 		}
 
-		await orm(c).insert(att).values(attachments).run();
+		for (let attachment of attachments) {
+			await orm(c).insert(att).values(attachment).run();
+		}
 	},
 
 	async list(c, params, userId) {
@@ -164,7 +166,9 @@ const attService = {
 			attDataList.push(attData);
 		}
 
-		await orm(c).insert(att).values(attDataList).run();
+		for (let item of attDataList) {
+			await orm(c).insert(att).values(item).run();
+		}
 
 		for (let att of attList) {
 			await r2Service.putObj(c, att.key, att.buff, {
@@ -193,7 +197,9 @@ const attService = {
 			delete attData.buff;
 		}
 
-		await orm(c).insert(att).values(attDataList).run();
+		for (let item of attDataList) {
+			await orm(c).insert(att).values(item).run();
+		}
 
 	},
 

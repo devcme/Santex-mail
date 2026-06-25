@@ -233,7 +233,14 @@ watch(() => form, () => {
       const data = JSON.parse(JSON.stringify(form))
       data.createTime = new Date().toISOString()
       localStorage.setItem(AUTO_DRAFT_KEY, JSON.stringify(data))
-    } catch (e) {}
+    } catch (e) {
+      try {
+        const lite = { ...form }
+        lite.attachments = []
+        lite.createTime = new Date().toISOString()
+        localStorage.setItem(AUTO_DRAFT_KEY, JSON.stringify(lite))
+      } catch (e2) {}
+    }
   }, 1000)
 }, { deep: true })
 

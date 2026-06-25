@@ -89,13 +89,13 @@ async function deleteDraft(draftIds) {
 
 async function jumpContent(email) {
   const att = await db.value.att.get(email.draftId)
-  email.attachments = att.attachments
+  email.attachments = att?.attachments || []
   uiStore.writerRef.openDraft(email);
 }
 
 async function openDraftWindow(email) {
   const att = await db.value.att.get(email.draftId)
-  email.attachments = att.attachments
+  email.attachments = att?.attachments || []
   const account = accountStore.currentAccount
   const user = userStore.user
   const preload = JSON.parse(JSON.stringify(email))
