@@ -3,7 +3,7 @@
     <div class="email-list-panel" :style="selectedEmail ? { width: panelWidth + 'px', flex: 'none' } : {}">
       <emailScroll ref="sysEmailScroll"
                   :get-emailList="getEmailList"
-                  :email-delete="allEmailDelete"
+                  :email-delete="wrappedAllEmailDelete"
                   :star-add="starAdd"
                   :star-cancel="starCancel"
                   :show-star="false"
@@ -107,6 +107,9 @@ import { useRoute } from 'vue-router'
 import { useSplitPane } from '@/utils/useSplitPane.js'
 import { notifyNewEmail } from '@/utils/notify.js'
 import { ElMessageBox, ElMessage } from 'element-plus'
+import { getCachedEmailList, cacheEmailList } from '@/sync/email-cache.js'
+import { isOfflineMode, isSyncEnabled, cacheNewEmails } from '@/sync/sync-manager.js'
+import { offlineAllEmailDelete } from '@/sync/outbox.js'
 
 defineOptions({ name: 'all-email' })
 
@@ -213,7 +216,20 @@ function onDblClick(email) {
 }
 
 function getEmailList(emailId, size) {
-  return allEmailList({emailId, size, ...params})
+  if (isOfflineMode()) {
+    return getCachedEmailList({ type: 'all', accountId: 0, emailId, size, timeSort: params.timeSort })
+  }
+  return allEmailList({emailId, size, ...params}).then(data => {
+    if (isSyncEnabled()) {
+      cacheEmailList(data, { type: 'all', accountId: 0, allReceive: false })
+    }
+    return data
+  })
+}
+
+function wrappedAllEmailDelete(emailIds) {
+  if (isOfflineMode()) return offlineAllEmailDelete(emailIds)
+  return allEmailDelete(emailIds)
 }
 
 async function latest() {
@@ -225,6 +241,7 @@ async function latest() {
     if (!latestId && latestId !== 0) continue
     if (route.name !== 'all-email') continue
     if (params.type !== 'receive') continue
+    if (isOfflineMode()) continue
 
     try {
       const curTimeSort = params.timeSort
@@ -232,6 +249,7 @@ async function latest() {
       if (list.length === 0) continue
       if (params.type !== 'receive') continue
       if (params.timeSort !== curTimeSort) continue
+      if (isSyncEnabled()) cacheNewEmails(list)
       for (let email of list) {
         sysEmailScroll.value.addItem(email)
         notifyNewEmail(email)

@@ -5,7 +5,7 @@
                   :cancel-success="cancelStar"
                   :star-success="addStar"
                   :getEmailList="getEmailList"
-                  :emailDelete="emailDelete"
+                  :emailDelete="wrappedEmailDelete"
                   :star-add="starAdd"
                   show-status
                    actionLeft="4px"
@@ -78,6 +78,9 @@ import {defineOptions, onMounted, reactive, ref, watch, computed} from "vue";
 import {Icon} from "@iconify/vue";
 import {useUiStore} from "@/store/ui.js";
 import { useSplitPane } from '@/utils/useSplitPane.js'
+import { getCachedEmailList, cacheEmailList } from '@/sync/email-cache.js'
+import { isOfflineMode, isSyncEnabled, cacheNewEmails } from '@/sync/sync-manager.js'
+import { offlineEmailDelete } from '@/sync/outbox.js'
 
 defineOptions({ name: 'send' })
 
@@ -145,13 +148,26 @@ function getEmailList(emailId, size) {
   const accountId = accountStore.currentAccountId;
   const allReceive = accountStore.currentAccount.allReceive;
   const extra = activeSearchParams.value ? activeSearchParams.value : {}
+
+  if (isOfflineMode()) {
+    return getCachedEmailList({ type: 1, accountId, emailId, size, timeSort: params.timeSort, search: extra, allReceive })
+  }
+
   return emailList(accountId, allReceive, emailId, params.timeSort, size, 1, extra).then(data => {
     if (data.latestEmail) {
       data.latestEmail.reqAccountId = accountId;
       data.latestEmail.allReceive = allReceive;
     }
+    if (isSyncEnabled()) {
+      cacheEmailList(data, { type: 1, accountId, allReceive })
+    }
     return data;
   })
+}
+
+function wrappedEmailDelete(emailIds) {
+  if (isOfflineMode()) return offlineEmailDelete(emailIds)
+  return emailDelete(emailIds)
 }
 
 function doSearch() {

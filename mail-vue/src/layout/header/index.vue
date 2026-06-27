@@ -5,6 +5,43 @@
       <span class="breadcrumb-item">{{ $t(route.meta.title) }}</span>
     </div>
     <div class="toolbar">
+      <el-popover v-if="syncStore.pwaMode" placement="bottom" :width="240" trigger="hover">
+        <template #reference>
+          <div class="icon-item sync-icon" :class="syncStore.status" @click="handleSyncClick">
+            <Icon v-if="syncStore.status === 'syncing'" icon="mingcute:sync-fill" width="20" height="20" class="syncing-spin"/>
+            <Icon v-else-if="syncStore.status === 'offline'" icon="mingcute:cloud-off-line" width="20" height="20"/>
+            <Icon v-else-if="syncStore.status === 'error'" icon="mingcute:warning-fill" width="20" height="20"/>
+            <Icon v-else-if="syncStore.status === 'pending'" icon="mingcute:time-line" width="20" height="20"/>
+            <Icon v-else icon="mingcute:cloud-check-line" width="20" height="20"/>
+            <span v-if="syncStore.pendingCount > 0" class="sync-badge">{{ syncStore.pendingCount }}</span>
+          </div>
+        </template>
+        <div class="sync-detail">
+          <div class="sync-detail-status" :class="syncStore.status">
+            <Icon v-if="syncStore.status === 'syncing'" icon="mingcute:sync-fill" width="16" height="16" class="syncing-spin"/>
+            <Icon v-else-if="syncStore.status === 'offline'" icon="mingcute:cloud-off-line" width="16" height="16"/>
+            <Icon v-else-if="syncStore.status === 'error'" icon="mingcute:warning-fill" width="16" height="16"/>
+            <Icon v-else-if="syncStore.status === 'pending'" icon="mingcute:time-line" width="16" height="16"/>
+            <Icon v-else icon="mingcute:cloud-check-line" width="16" height="16"/>
+            <span>{{ $t(syncStore.statusText) }}</span>
+          </div>
+          <div class="sync-detail-time" v-if="syncStore.lastSyncTime">
+            {{ $t('lastSyncTime') }}: {{ formatSyncTime(syncStore.lastSyncTime) }}
+          </div>
+          <div class="sync-detail-pending" v-if="syncStore.pendingCount > 0">
+            {{ $t('pendingItems', { count: syncStore.pendingCount }) }}
+          </div>
+          <div class="sync-detail-error" v-if="syncStore.syncError">
+            {{ syncStore.syncError }}
+          </div>
+          <el-button v-if="syncStore.status === 'error'" size="small" type="primary" @click="retrySync" style="width: 100%; margin-top: 8px;">
+            {{ $t('retry') }}
+          </el-button>
+          <el-button v-if="syncStore.status === 'pending'" size="small" type="primary" @click="retrySync" style="width: 100%; margin-top: 8px;">
+            {{ $t('syncNow') }}
+          </el-button>
+        </div>
+      </el-popover>
       <div class="icon-item help-icon" @click="openGuide">
         <Icon icon="mingcute:question-line" width="20" height="20"/>
       </div>
@@ -110,12 +147,16 @@ import {hasPerm} from "@/perm/perm.js"
 import {useI18n} from "vue-i18n";
 import {setExtend} from "@/utils/day.js"
 import { notifyPermission as getNotifyPermission, requestNotifyPermission, notifySupported, isIOS, isPWA } from "@/utils/notify.js"
+import { useSyncStore } from "@/store/sync.js"
+import { processOutbox } from "@/sync/outbox.js"
+import dayjs from "dayjs"
 
 const {t} = useI18n();
 const route = useRoute();
 const settingStore = useSettingStore();
 const userStore = useUserStore();
 const uiStore = useUiStore();
+const syncStore = useSyncStore();
 const logoutLoading = ref(false)
 const userInfoShow = ref(false)
 const userinfoRef = ref({})
@@ -148,6 +189,21 @@ function refreshPermission() {
 
 function openGuide() {
   uiStore.showGuide++
+}
+
+function formatSyncTime(timestamp) {
+  if (!timestamp) return ''
+  return dayjs(timestamp).format('HH:mm:ss')
+}
+
+async function retrySync() {
+  await processOutbox()
+}
+
+function handleSyncClick() {
+  if (syncStore.status === 'error' || syncStore.status === 'pending') {
+    retrySync()
+  }
 }
 
 async function grantNotification() {
@@ -457,6 +513,40 @@ function formatName(email) {
     background: var(--base-fill);
   }
 
+  .sync-icon {
+    position: relative;
+    &.syncing { color: var(--el-color-primary); }
+    &.offline { color: var(--el-text-color-secondary); }
+    &.error { color: var(--el-color-danger); }
+    &.pending { color: var(--el-color-warning); }
+    &.synced { color: var(--el-color-success); }
+  }
+
+  .sync-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background: var(--el-color-danger);
+    color: #fff;
+    font-size: 10px;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+  }
+
+  .syncing-spin {
+    animation: sync-spin 1s linear infinite;
+  }
+
+  @keyframes sync-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
   .notice {
     font-size: 22px;
     margin-right: 4px;
@@ -530,6 +620,37 @@ function formatName(email) {
     font-size: 13px;
     color: var(--el-color-warning);
     line-height: 1.4;
+  }
+}
+
+.sync-detail {
+  .sync-detail-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: bold;
+    font-size: 14px;
+    &.syncing { color: var(--el-color-primary); }
+    &.offline { color: var(--el-text-color-secondary); }
+    &.error { color: var(--el-color-danger); }
+    &.pending { color: var(--el-color-warning); }
+    &.synced { color: var(--el-color-success); }
+  }
+  .sync-detail-time {
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--el-text-color-secondary);
+  }
+  .sync-detail-pending {
+    margin-top: 4px;
+    font-size: 13px;
+    color: var(--el-color-warning);
+  }
+  .sync-detail-error {
+    margin-top: 4px;
+    font-size: 13px;
+    color: var(--el-color-danger);
+    word-break: break-word;
   }
 }
 </style>

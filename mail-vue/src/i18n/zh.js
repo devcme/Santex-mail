@@ -425,6 +425,18 @@ const zh = {
     dropImageTitle: '图片文件',
     dropImageHint: '检测到图片 {name}，要插入邮件正文还是作为附件？',
     insertInline: '插入正文',
-    addAsAttachment: '作为附件'
+    addAsAttachment: '作为附件',
+    syncDisabled: '未启用',
+    offlineMode: '离线模式',
+    syncing: '同步中...',
+    synced: '已同步',
+    syncFailed: '同步失败',
+    syncPending: '待同步',
+    lastSyncTime: '上次同步',
+    pendingItems: '待同步 {count} 项',
+    retry: '重试',
+    syncNow: '立即同步',
+    offlineSendHint: '当前处于离线状态，邮件无法直接发送。是否保存为草稿？网络恢复后可手动发送。',
+    saveDraft: '保存草稿'
 }
 export default zh

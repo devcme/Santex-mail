@@ -425,7 +425,19 @@ const en = {
     dropImageTitle: 'Image File',
     dropImageHint: 'Image {name} detected. Insert into email body or as attachment?',
     insertInline: 'Insert Inline',
-    addAsAttachment: 'Add as Attachment'
+    addAsAttachment: 'Add as Attachment',
+    syncDisabled: 'Disabled',
+    offlineMode: 'Offline',
+    syncing: 'Syncing...',
+    synced: 'Synced',
+    syncFailed: 'Sync Failed',
+    syncPending: 'Pending',
+    lastSyncTime: 'Last sync',
+    pendingItems: '{count} item(s) pending',
+    retry: 'Retry',
+    syncNow: 'Sync Now',
+    offlineSendHint: 'You are currently offline. The email cannot be sent directly. Save as draft? You can send it manually when back online.',
+    saveDraft: 'Save Draft'
 }
 
 export default en

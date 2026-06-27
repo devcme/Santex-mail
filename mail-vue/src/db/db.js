@@ -18,6 +18,14 @@ function createDB() {
         att: 'draftId',
         signature: '++sigId, isDefault'
     })
+    db.value.version(3).stores({
+        draft: '++draftId,createTime',
+        att: 'draftId',
+        signature: '++sigId, isDefault',
+        emailCache: 'emailId, type, accountId, [type+accountId], createTime, unread, isDel',
+        outbox: '++id, operation, status, createdAt',
+        syncMeta: 'key'
+    })
 }
 
 createDB()

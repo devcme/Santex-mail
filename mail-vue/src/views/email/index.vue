@@ -5,11 +5,11 @@
                   :cancel-success="cancelStar"
                   :star-success="addStar"
                   :getEmailList="getEmailList"
-                  :emailDelete="emailDelete"
+                  :emailDelete="wrappedEmailDelete"
                   :star-add="starAdd"
                   :star-cancel="starCancel"
                   :time-sort="params.timeSort"
-                  :email-read="emailRead"
+                  :email-read="wrappedEmailRead"
                   :show-unread="true"
                    actionLeft="4px"
                    :split-active="!!selectedEmail"
@@ -87,6 +87,9 @@ import {useUiStore} from "@/store/ui.js";
 import {useI18n} from "vue-i18n";
 import { useSplitPane } from '@/utils/useSplitPane.js'
 import { notifyNewEmail } from '@/utils/notify.js'
+import { getCachedEmailList, cacheEmailList, cacheSingleEmail } from '@/sync/email-cache.js'
+import { isOfflineMode, isSyncEnabled, cacheNewEmails } from '@/sync/sync-manager.js'
+import { offlineEmailDelete, offlineEmailRead } from '@/sync/outbox.js'
 
 defineOptions({
   name: 'email'
@@ -161,6 +164,14 @@ function handleDetailDelete(email) {
     cancelButtonText: t('cancel'),
     type: 'warning'
   }).then(() => {
+    if (isOfflineMode()) {
+      offlineEmailDelete([email.emailId]).then(() => {
+        ElMessage({ message: t('delSuccessMsg'), type: 'success', plain: true })
+        emailStore.deleteIds = [email.emailId]
+        closeDetail()
+      })
+      return
+    }
     emailDelete(email.emailId).then(() => {
       ElMessage({
         message: t('delSuccessMsg'),
@@ -194,6 +205,8 @@ async function latest() {
 
     if (route.name !== 'email') continue;
 
+    if (isOfflineMode()) continue;
+
     const latestId = scroll.value.latestEmail?.emailId
 
     if (!scroll.value.firstLoad && autoRefresh > 1) {
@@ -209,6 +222,7 @@ async function latest() {
 
         if (accountId === accountStore.currentAccountId && params.timeSort === curTimeSort && allReceive === accountStore.currentAccount.allReceive) {
           if (list.length > 0) {
+            if (isSyncEnabled()) cacheNewEmails(list)
             for (let email of list) {
               email.reqAccountId = accountId;
               email.allReceive = allReceive;
@@ -232,14 +246,32 @@ async function latest() {
 function addStar(email) { emailStore.starScroll?.addItem(email) }
 function cancelStar(email) { emailStore.starScroll?.deleteEmail([email.emailId]) }
 
+function wrappedEmailDelete(emailIds) {
+  if (isOfflineMode()) return offlineEmailDelete(emailIds)
+  return emailDelete(emailIds)
+}
+
+function wrappedEmailRead(emailIds) {
+  if (isOfflineMode()) return offlineEmailRead(emailIds)
+  return emailRead(emailIds)
+}
+
 function getEmailList(emailId, size) {
   const accountId = accountStore.currentAccountId;
   const allReceive = accountStore.currentAccount.allReceive;
   const extra = activeSearchParams.value ? activeSearchParams.value : {}
+
+  if (isOfflineMode()) {
+    return getCachedEmailList({ type: 0, accountId, emailId, size, timeSort: params.timeSort, search: extra, allReceive })
+  }
+
   return emailList(accountId, allReceive, emailId, params.timeSort, size, 0, extra).then(data => {
     if (data.latestEmail) {
       data.latestEmail.reqAccountId = accountId;
       data.latestEmail.allReceive = allReceive;
+    }
+    if (isSyncEnabled()) {
+      cacheEmailList(data, { type: 0, accountId, allReceive })
     }
     return data;
   })

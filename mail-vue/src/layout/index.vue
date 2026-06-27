@@ -37,6 +37,7 @@ import db from '@/db/db.js'
 import { userDraftStore } from '@/store/draft.js'
 import { h } from 'vue'
 import dayjs from 'dayjs'
+import { initSyncManager, destroySyncManager } from '@/sync/sync-manager.js'
 
 const uiStore = useUiStore();
 const draftStore = userDraftStore()
@@ -63,6 +64,8 @@ onMounted(() => {
 
   recoverAutoDrafts()
 
+  initSyncManager()
+
   if (!localStorage.getItem('guide-shown')) {
     setTimeout(() => {
       guideDialogRef.value?.open()
@@ -78,6 +81,7 @@ watch(() => uiStore.showGuide, () => {
 onBeforeUnmount(() => {
   window.removeEventListener('resize', handleResize)
   window.removeEventListener('message', handleMessage)
+  destroySyncManager()
 })
 
 function handleMessage(event) {

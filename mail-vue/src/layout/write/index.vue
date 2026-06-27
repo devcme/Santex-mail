@@ -153,6 +153,7 @@ import {h, nextTick, onMounted, onUnmounted, reactive, ref, toRaw, computed, wat
 import {Icon} from "@iconify/vue";
 import {useUserStore} from "@/store/user.js";
 import {emailSend} from "@/request/email.js";
+import { isOfflineMode, isSyncEnabled } from '@/sync/sync-manager.js'
 import {isEmail} from "@/utils/verify-utils.js";
 import {useAccountStore} from "@/store/account.js";
 import {useEmailStore} from "@/store/email.js";
@@ -428,6 +429,17 @@ async function sendEmail() {
       type: 'error',
       plain: true,
     })
+    return
+  }
+
+  if (isOfflineMode()) {
+    ElMessageBox.confirm(t('offlineSendHint'), t('offlineMode'), {
+      confirmButtonText: t('saveDraft'),
+      cancelButtonText: t('cancel'),
+      type: 'warning'
+    }).then(() => {
+      saveDraft()
+    }).catch(() => {})
     return
   }
 

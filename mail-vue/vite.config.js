@@ -23,20 +23,68 @@ export default defineConfig(({mode}) => {
                     short_name: env.VITE_PWA_NAME,
                     background_color: '#FFFFFF',
                     theme_color: '#FFFFFF',
+                    display: 'standalone',
+                    start_url: '/',
+                    scope: '/',
                     icons: [
                         {
                             src: 'mail-pwa.png',
                             sizes: '192x192',
                             type: 'image/png',
+                        },
+                        {
+                            src: 'mail-pwa.png',
+                            sizes: '512x512',
+                            type: 'image/png',
+                            purpose: 'any maskable',
                         }
                     ],
                 },
                 workbox: {
                     disableDevLogs: true,
-                    globPatterns: [],
-                    runtimeCaching: [],
-                    navigateFallback: null,
+                    globPatterns: ['**/*.{js,css,html,woff2,png,svg,ico,json}'],
+                    globIgnores: ['**/registerSW.js'],
+                    navigateFallback: 'index.html',
+                    navigateFallbackDenylist: [/^\/api\//, /^\/oss\//, /^\/attachments\//],
                     cleanupOutdatedCaches: true,
+                    runtimeCaching: [
+                        {
+                            urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
+                            handler: 'CacheFirst',
+                            options: {
+                                cacheName: 'google-fonts-cache',
+                                expiration: {
+                                    maxEntries: 10,
+                                    maxAgeSeconds: 60 * 60 * 24 * 365
+                                },
+                                cacheableResponse: { statuses: [0, 200] }
+                            }
+                        },
+                        {
+                            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico|woff2)$/i,
+                            handler: 'StaleWhileRevalidate',
+                            options: {
+                                cacheName: 'static-assets-cache',
+                                expiration: {
+                                    maxEntries: 100,
+                                    maxAgeSeconds: 60 * 60 * 24 * 30
+                                }
+                            }
+                        },
+                        {
+                            urlPattern: /\/api\/(?:email|allEmail)\/list/i,
+                            handler: 'NetworkFirst',
+                            options: {
+                                cacheName: 'email-api-cache',
+                                networkTimeoutSeconds: 10,
+                                expiration: {
+                                    maxEntries: 50,
+                                    maxAgeSeconds: 60 * 60 * 24
+                                },
+                                cacheableResponse: { statuses: [0, 200] }
+                            }
+                        }
+                    ]
                 }
             }),
             AutoImport({

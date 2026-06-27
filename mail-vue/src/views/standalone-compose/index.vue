@@ -84,6 +84,7 @@ import { Icon } from "@iconify/vue";
 import { ElMessage, ElNotification, ElMessageBox } from 'element-plus'
 import { useUserStore } from "@/store/user.js";
 import { emailSend } from "@/request/email.js";
+import { isOfflineMode } from '@/sync/sync-manager.js'
 import { useAccountStore } from "@/store/account.js";
 import { useEmailStore } from "@/store/email.js";
 import { fileToBase64, formatBytes } from "@/utils/file-utils.js";
@@ -440,6 +441,11 @@ async function sendEmail() {
   }
   if (sending) {
     ElMessage({ message: t('sendingErrorMsg'), type: 'error', plain: true })
+    return
+  }
+
+  if (isOfflineMode()) {
+    ElMessage({ message: t('offlineSendHint'), type: 'warning', plain: true, duration: 5000 })
     return
   }
 
