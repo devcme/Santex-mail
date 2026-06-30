@@ -17,14 +17,15 @@ const attService = {
 
 		for (let attachment of attachments) {
 
+			const filename = attachment.filename || attachment.key.split('/').pop()
 			let metadate = {
 				contentType: attachment.mimeType,
 			}
 
 			if (!attachment.contentId) {
-				metadate.contentDisposition = `attachment;filename=${attachment.filename}`
+				metadate.contentDisposition = `attachment; filename="${filename}"`
 			} else {
-				metadate.contentDisposition = `inline;filename=${attachment.filename}`
+				metadate.contentDisposition = `inline; filename="${filename}"`
 				metadate.cacheControl = `max-age=259200`
 			}
 
@@ -173,7 +174,7 @@ const attService = {
 		for (let att of attList) {
 			await r2Service.putObj(c, att.key, att.buff, {
 				contentType: att.type,
-				contentDisposition: `attachment;filename=${att.filename}`
+				contentDisposition: `attachment; filename="${att.filename}"`
 			});
 		}
 
@@ -192,7 +193,7 @@ const attService = {
 			await r2Service.putObj(c, attData.key, attData.buff, {
 				contentType: attData.mimeType,
 				cacheControl: `max-age=259200`,
-				contentDisposition: `inline;filename=${attData.filename}`
+				contentDisposition: `inline; filename="${attData.filename}"`
 			});
 			delete attData.buff;
 		}

@@ -14,7 +14,7 @@ export function cvtR2Url(key) {
     let domain = settings.r2Domain
 
     if (!domain) {
-        return key;
+        return '/' + key;
     }
 
     if (!domain.startsWith('http')) {
