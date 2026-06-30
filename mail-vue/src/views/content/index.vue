@@ -55,7 +55,7 @@
                 <div class="att-size">{{ formatBytes(att.size) }}</div>
                 <div class="opt-icon att-icon">
                   <Icon v-if="isImage(att.filename)" icon="hugeicons:view" width="22" height="22" @click="showImage(att.key)"/>
-                  <a :href="cvtR2Url(att.key)" :download="att.filename" target="_blank">
+                  <a :href="attUrl(att)" :download="att.filename" target="_blank">
                     <Icon icon="system-uicons:push-down" width="22" height="22"/>
                   </a>
                 </div>
@@ -172,6 +172,13 @@ function handleAttClick(att) {
   if (isImage(att.filename || att.key)) {
     showImage(att.key)
   }
+}
+
+function attUrl(att) {
+  if (att.filename && /[;"'<>]/.test(att.filename)) {
+    return '/' + att.key
+  }
+  return cvtR2Url(att.key)
 }
 
 function isImage(filename) {

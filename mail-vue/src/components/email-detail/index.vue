@@ -61,7 +61,7 @@
                 <div class="opt-icon att-icon-item">
                   <Icon v-if="isImage(att.filename)" icon="hugeicons:view" width="22" height="22" @click="showImage(att.key)"/>
                   <Icon v-else-if="isPdf(att.filename) || isDoc(att.filename)" icon="hugeicons:view" width="22" height="22" @click.stop="previewAtt(att)"/>
-                  <a :href="cvtR2Url(att.key)" :download="att.filename" target="_blank">
+                  <a :href="attUrl(att)" :download="att.filename" target="_blank">
                     <Icon icon="system-uicons:push-down" width="22" height="22"/>
                   </a>
                 </div>
@@ -275,8 +275,14 @@ function handleAttClick(att) {
 }
 
 function previewAtt(att) {
-  const url = cvtR2Url(att.key)
-  window.open(url, '_blank')
+  window.open(attUrl(att), '_blank')
+}
+
+function attUrl(att) {
+  if (att.filename && /[;"'<>]/.test(att.filename)) {
+    return '/' + att.key
+  }
+  return cvtR2Url(att.key)
 }
 
 function isImage(filename) {
