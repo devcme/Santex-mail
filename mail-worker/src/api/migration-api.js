@@ -1,6 +1,8 @@
 import app from '../hono/hono';
 import r2Service from '../service/r2-service';
-import settingService from '../service/setting-service';
+import orm from '../entity/orm';
+import { att } from '../entity/att';
+import { eq, isNull, and, ne } from 'drizzle-orm';
 
 app.get('/migration/fixR2Metadata/:secret', async (c) => {
 	const initKey = c.env.INIT_KEY;
@@ -14,6 +16,21 @@ app.get('/migration/fixR2Metadata/:secret', async (c) => {
 	}
 
 	const prefix = c.req.query('prefix') || 'attachments/';
+
+	const allAtts = await orm(c).select({
+		key: att.key,
+		filename: att.filename,
+		mimeType: att.mimeType,
+		contentId: att.contentId,
+	}).from(att).all();
+
+	const attMap = new Map();
+	for (const a of allAtts) {
+		if (!attMap.has(a.key)) {
+			attMap.set(a.key, a);
+		}
+	}
+
 	const stats = { scanned: 0, fixed: 0, skipped: 0, errors: [] };
 	let cursor;
 
@@ -26,13 +43,14 @@ app.get('/migration/fixR2Metadata/:secret', async (c) => {
 			try {
 				const meta = obj.httpMetadata || {};
 				const disposition = meta.contentDisposition || '';
-				const filenameMatch = disposition.match(/filename=?["']?([^"';]*)["']?/i);
-				const storedFilename = filenameMatch ? filenameMatch[1].trim() : '';
+				const storedContentType = meta.contentType || '';
 
 				const needsFix = !disposition ||
-					!storedFilename ||
-					storedFilename === 'undefined' ||
-					(!storedFilename.includes('.') && obj.key.includes('.'));
+					disposition.includes('filename=undefined') ||
+					isBadDisposition(disposition) ||
+					!storedContentType ||
+					storedContentType === 'application/octet-stream' ||
+					storedContentType === 'binary/octet-stream';
 
 				if (!needsFix) {
 					stats.skipped++;
@@ -46,12 +64,18 @@ app.get('/migration/fixR2Metadata/:secret', async (c) => {
 				}
 
 				const body = await r2Obj.arrayBuffer();
+				const dbAtt = attMap.get(obj.key);
 				const keyFilename = obj.key.split('/').pop();
-				const isInline = disposition.startsWith('inline');
+
+				const filename = dbAtt?.filename || keyFilename;
+				const mimeType = dbAtt?.mimeType || getMimeTypeFromKey(obj.key) || 'application/octet-stream';
+				const isInline = dbAtt?.contentId || disposition.startsWith('inline');
+
+				const safeFilename = filename.replace(/"/g, '');
 
 				const newMeta = {
-					contentType: meta.contentType || getMimeTypeFromKey(obj.key),
-					contentDisposition: `${isInline ? 'inline' : 'attachment'}; filename="${keyFilename}"`,
+					contentType: mimeType,
+					contentDisposition: `${isInline ? 'inline' : 'attachment'}; filename="${safeFilename}"`,
 				};
 				if (meta.cacheControl) {
 					newMeta.cacheControl = meta.cacheControl;
@@ -69,6 +93,17 @@ app.get('/migration/fixR2Metadata/:secret', async (c) => {
 
 	return c.json(stats);
 });
+
+function isBadDisposition(disposition) {
+	const match = disposition.match(/filename=["']?([^"';]*)["']?/i);
+	if (!match) return true;
+	const fn = match[1].trim();
+	if (!fn || fn === 'undefined') return true;
+	if (disposition.includes('filename=') && !disposition.includes('filename="') && !disposition.includes("filename='")) {
+		return true;
+	}
+	return false;
+}
 
 function getMimeTypeFromKey(key) {
 	const ext = key.includes('.') ? key.split('.').pop().toLowerCase() : '';
@@ -107,5 +142,5 @@ function getMimeTypeFromKey(key) {
 		rtf: 'application/rtt',
 		eml: 'message/rfc822',
 	};
-	return map[ext] || 'application/octet-stream';
+	return map[ext] || '';
 }
