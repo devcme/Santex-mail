@@ -38,6 +38,51 @@ const attService = {
 		}
 	},
 
+	async lazyFixR2(c, attList) {
+		try {
+			const storageType = await r2Service.storageType(c);
+			if (storageType !== 'R2') return;
+
+			for (const attRow of attList) {
+				try {
+					const head = await c.env.r2.head(attRow.key);
+					if (!head) continue;
+
+					const meta = head.httpMetadata || {};
+					const disp = meta.contentDisposition || '';
+					const ct = meta.contentType || '';
+
+					const bad = !disp ||
+						disp.includes('filename=undefined') ||
+						(disp.includes('filename=') && !disp.includes('filename="')) ||
+						!ct || ct === 'application/octet-stream';
+
+					if (!bad) continue;
+
+					const r2Obj = await c.env.r2.get(attRow.key);
+					if (!r2Obj) continue;
+					const body = await r2Obj.arrayBuffer();
+
+					const filename = (attRow.filename || attRow.key.split('/').pop()).replace(/"/g, '');
+					const mimeType = attRow.mimeType || getExtMime(attRow.key);
+					const isInline = disp.startsWith('inline');
+
+					const newMeta = {
+						contentType: mimeType,
+						contentDisposition: `${isInline ? 'inline' : 'attachment'}; filename="${filename}"`,
+					};
+					if (meta.cacheControl) newMeta.cacheControl = meta.cacheControl;
+
+					await c.env.r2.put(attRow.key, body, { httpMetadata: newMeta });
+				} catch (e) {
+					console.warn(`[lazyFixR2] ${attRow.key}: ${e.message}`);
+				}
+			}
+		} catch (e) {
+			console.warn('[lazyFixR2] error:', e.message);
+		}
+	},
+
 	async list(c, params, userId) {
 		const { emailId } = params;
 		const emailRow = await orm(c).select({ userId: email.userId }).from(email).where(eq(email.emailId, emailId)).get();
@@ -278,5 +323,25 @@ const attService = {
 		return orm(c).select().from(att).where(inArray(att.key, keys)).orderBy(desc(att.attId)).groupBy(att.key).all();
 	}
 };
+
+function getExtMime(key) {
+	const ext = key.includes('.') ? key.split('.').pop().toLowerCase() : '';
+	const map = {
+		pdf: 'application/pdf', doc: 'application/msword',
+		docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+		xls: 'application/vnd.ms-excel',
+		xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+		ppt: 'application/vnd.ms-powerpoint',
+		pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+		zip: 'application/zip', rar: 'application/vnd.rar',
+		png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg',
+		gif: 'image/gif', bmp: 'image/bmp', webp: 'image/webp',
+		svg: 'image/svg+xml', ico: 'image/x-icon', tiff: 'image/tiff',
+		txt: 'text/plain', html: 'text/html', csv: 'text/csv',
+		mp3: 'audio/mpeg', mp4: 'video/mp4', wav: 'audio/wav',
+		avi: 'video/x-msvideo', mov: 'video/quicktime',
+	};
+	return map[ext] || 'application/octet-stream';
+}
 
 export default attService;

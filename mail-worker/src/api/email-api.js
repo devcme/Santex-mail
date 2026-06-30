@@ -21,6 +21,9 @@ app.delete('/email/delete', async (c) => {
 
 app.get('/email/attList', async (c) => {
 	const attList = await attService.list(c, c.req.query(), userContext.getUserId(c));
+	if (attList.length && c.env.r2) {
+		c.execution?.waitUntil?.(attService.lazyFixR2(c, attList));
+	}
 	return c.json(result.ok(attList));
 });
 
