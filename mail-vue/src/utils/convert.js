@@ -1,5 +1,4 @@
 import {useSettingStore} from "@/store/setting.js";
-import {useSettingStore} from "@/store/setting.js";
 export function cvtR2Url(key) {
 
     if (!key) {

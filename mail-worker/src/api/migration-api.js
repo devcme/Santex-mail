@@ -5,8 +5,8 @@ import { att } from '../entity/att';
 import { eq, isNull, and, ne } from 'drizzle-orm';
 
 app.get('/migration/fixR2Metadata/:secret', async (c) => {
-	const initKey = c.env.INIT_KEY;
-	if (!initKey || c.req.param('secret') !== initKey) {
+	const secret = c.req.param('secret');
+	if (!c.env.jwt_secret || secret !== c.env.jwt_secret) {
 		return c.json({ error: 'Unauthorized' }, 401);
 	}
 
