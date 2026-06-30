@@ -74,6 +74,7 @@
     <el-image-viewer
         v-if="showPreview"
         :url-list="srcList"
+        :initial-index="previewIndex"
         show-progress
         @close="showPreview = false"
     />
@@ -130,6 +131,7 @@ const emailStore = useEmailStore();
 const uiStore = useUiStore();
 const showPreview = ref(false)
 const srcList = reactive([])
+const previewIndex = ref(0)
 const bgMode = ref(0)
 const contentZoom = ref(1)
 const { t } = useI18n()
@@ -260,9 +262,19 @@ function formatImage(content) {
 
 function showImage(key) {
   if (!isImage(key)) return;
-  const url = cvtR2Url(key)
+  const imageAtts = (props.email.attList || []).filter(a => isImage(a.filename || a.key))
   srcList.length = 0
-  srcList.push(url)
+  if (imageAtts.length > 0) {
+    let idx = 0
+    imageAtts.forEach((a, i) => {
+      srcList.push(cvtR2Url(a.key))
+      if (a.key === key) idx = i
+    })
+    previewIndex.value = idx
+  } else {
+    srcList.push(cvtR2Url(key))
+    previewIndex.value = 0
+  }
   showPreview.value = true
 }
 
@@ -275,6 +287,13 @@ function handleAttClick(att) {
 }
 
 function previewAtt(att) {
+  const filename = att.filename || att.key
+  if (isOfficeDoc(filename)) {
+    let url = '/' + att.key
+    const fullUrl = window.location.origin + url
+    window.open('https://view.officeapps.live.com/op/view.aspx?src=' + encodeURIComponent(fullUrl), '_blank')
+    return
+  }
   let url = attUrl(att)
   if (url.startsWith('/')) url += '?inline=1'
   window.open(url, '_blank')
@@ -295,8 +314,12 @@ function isPdf(filename) {
   return getExtName(filename) === 'pdf'
 }
 
+function isOfficeDoc(filename) {
+  return ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'].includes(getExtName(filename))
+}
+
 function isDoc(filename) {
-  return ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'csv', 'txt'].includes(getExtName(filename))
+  return isOfficeDoc(filename) || ['csv', 'txt'].includes(getExtName(filename))
 }
 
 function formateReceive(recipient) {

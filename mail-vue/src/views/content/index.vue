@@ -55,6 +55,7 @@
                 <div class="att-size">{{ formatBytes(att.size) }}</div>
                 <div class="opt-icon att-icon">
                   <Icon v-if="isImage(att.filename)" icon="hugeicons:view" width="22" height="22" @click="showImage(att.key)"/>
+                  <Icon v-else-if="isPdf(att.filename) || isDoc(att.filename)" icon="hugeicons:view" width="22" height="22" @click.stop="previewAtt(att)"/>
                   <a :href="attUrl(att)" :download="att.filename" target="_blank">
                     <Icon icon="system-uicons:push-down" width="22" height="22"/>
                   </a>
@@ -68,6 +69,7 @@
     <el-image-viewer
         v-if="showPreview"
         :url-list="srcList"
+        :initial-index="previewIndex"
         show-progress
         @close="showPreview = false"
     />
@@ -101,6 +103,7 @@ const router = useRouter()
 const email = emailStore.contentData.email
 const showPreview = ref(false)
 const srcList = reactive([])
+const previewIndex = ref(0)
 
 const { t } = useI18n()
 watch(() => accountStore.currentAccountId, () => {
@@ -162,15 +165,39 @@ function formatImage(content) {
 
 function showImage(key) {
   if (!isImage(key)) return;
-  const url = cvtR2Url(key)
+  const imageAtts = (email.attList || []).filter(a => isImage(a.filename || a.key))
   srcList.length = 0
-  srcList.push(url)
+  if (imageAtts.length > 0) {
+    let idx = 0
+    imageAtts.forEach((a, i) => {
+      srcList.push(cvtR2Url(a.key))
+      if (a.key === key) idx = i
+    })
+    previewIndex.value = idx
+  } else {
+    srcList.push(cvtR2Url(key))
+    previewIndex.value = 0
+  }
   showPreview.value = true
+}
+
+function previewAtt(att) {
+  const filename = att.filename || att.key
+  if (isOfficeDoc(filename)) {
+    const fullUrl = window.location.origin + '/' + att.key
+    window.open('https://view.officeapps.live.com/op/view.aspx?src=' + encodeURIComponent(fullUrl), '_blank')
+    return
+  }
+  let url = attUrl(att)
+  if (url.startsWith('/')) url += '?inline=1'
+  window.open(url, '_blank')
 }
 
 function handleAttClick(att) {
   if (isImage(att.filename || att.key)) {
     showImage(att.key)
+  } else {
+    previewAtt(att)
   }
 }
 
@@ -183,6 +210,18 @@ function attUrl(att) {
 
 function isImage(filename) {
   return ['png', 'jpg', 'jpeg', 'bmp', 'gif','jfif', 'webp', 'svg', 'tiff', 'ico'].includes(getExtName(filename))
+}
+
+function isPdf(filename) {
+  return getExtName(filename) === 'pdf'
+}
+
+function isOfficeDoc(filename) {
+  return ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'].includes(getExtName(filename))
+}
+
+function isDoc(filename) {
+  return isOfficeDoc(filename) || ['csv', 'txt'].includes(getExtName(filename))
 }
 
 function formateReceive(recipient) {
