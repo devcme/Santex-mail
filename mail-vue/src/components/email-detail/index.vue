@@ -275,7 +275,9 @@ function handleAttClick(att) {
 }
 
 function previewAtt(att) {
-  window.open(attUrl(att), '_blank')
+  let url = attUrl(att)
+  if (url.startsWith('/')) url += '?inline=1'
+  window.open(url, '_blank')
 }
 
 function attUrl(att) {

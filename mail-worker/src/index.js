@@ -18,7 +18,13 @@ export default {
 		}
 
 		 if (['/static/','/attachments/'].some(p => url.pathname.startsWith(p))) {
-			 return await r2Service.toObjResp({ env }, url.pathname.substring(1));
+			 const resp = await r2Service.toObjResp({ env }, url.pathname.substring(1));
+			 if (url.searchParams.get('inline') === '1' && resp.headers.get('Content-Disposition')) {
+				 const headers = new Headers(resp.headers);
+				 headers.set('Content-Disposition', 'inline');
+				 return new Response(resp.body, { status: resp.status, headers });
+			 }
+			 return resp;
 		 }
 
 		return env.assets.fetch(req);
